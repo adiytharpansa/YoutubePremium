@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  eggplay logo for the navigation drawer header: a white egg silhouette
+  with the play triangle knocked out (even-odd fill), for use on the
+  coloured header background.
+  SPDX-License-Identifier: GPL-3.0-or-later
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M54,20 C63,20 77,38 77,57 C77,74 66,88 54,88 C42,88 31,74 31,57 C31,38 43,20 54,20 Z M43,42 L69,54 L43,66 Z"
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd" />
+</vector>
