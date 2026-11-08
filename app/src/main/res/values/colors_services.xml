@@ -2,10 +2,10 @@
 <resources>
     <!-- YouTube -->
     <color name="light_youtube_primary_color">#FC6401</color>
-    <color name="light_youtube_accent_color">#000000</color>
+    <color name="light_youtube_accent_color">#FC6401</color>
 
     <color name="dark_youtube_primary_color">#FC6401</color>
-    <color name="dark_youtube_accent_color">#FFFFFF</color>
+    <color name="dark_youtube_accent_color">#FC6401</color>
 
     <!-- SoundCloud -->
     <color name="light_soundcloud_primary_color">#f57c00</color>
