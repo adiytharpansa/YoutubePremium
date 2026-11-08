@@ -40,8 +40,8 @@ configure<ApplicationExtension> {
     namespace = NEWPIPE_APPLICATION_ID_OLD
 
     defaultConfig {
-        applicationId = NEWPIPE_APPLICATION_ID_OLD
-        resValue("string", "app_name", "NewPipe")
+        applicationId = EGGPLAY_APPLICATION_ID
+        resValue("string", "app_name", "eggplay")
         minSdk {
             version = release(NEWPIPE_VERSION_SDK_MIN)
         }
@@ -64,17 +64,21 @@ configure<ApplicationExtension> {
             // suffix the app id and the app name with git branch name
             if (normalizedWorkingBranch.isEmpty() || workingBranch in defaultBranches) {
                 applicationIdSuffix = ".debug"
-                resValue("string", "app_name", "NewPipe Debug")
+                resValue("string", "app_name", "eggplay Debug")
             } else {
                 applicationIdSuffix = ".debug.$normalizedWorkingBranch"
-                resValue("string", "app_name", "NewPipe $workingBranch")
+                resValue("string", "app_name", "eggplay $workingBranch")
             }
         }
 
         release {
+            // eggplay: sign release builds with the debug key so the APK is
+            // installable for personal distribution (not for Play Store).
+            // Replace with a private keystore before any store release.
+            signingConfig = signingConfigs.getByName("debug")
             System.getProperty("packageSuffix")?.let { suffix ->
                 applicationIdSuffix = suffix
-                resValue("string", "app_name", "NewPipe $suffix")
+                resValue("string", "app_name", "eggplay $suffix")
             }
             isMinifyEnabled = true
             isShrinkResources = true
@@ -92,10 +96,10 @@ configure<ApplicationExtension> {
             // suffix the app id and the app name with git branch name
             if (normalizedWorkingBranch.isEmpty() || workingBranch in defaultBranches) {
                 applicationIdSuffix = ".continuous"
-                resValue("string", "app_name", "NewPipe Continuous")
+                resValue("string", "app_name", "eggplay Continuous")
             } else {
                 applicationIdSuffix = ".continuous.$normalizedWorkingBranch"
-                resValue("string", "app_name", "NewPipe $workingBranch")
+                resValue("string", "app_name", "eggplay $workingBranch")
             }
         }
     }
