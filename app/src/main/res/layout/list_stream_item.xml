@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/video_item_search_duration_margin"
         android:layout_marginBottom="@dimen/video_item_search_duration_margin"
-        android:background="@color/duration_background_color"
+        android:background="@drawable/duration_badge_background"
         android:paddingHorizontal="@dimen/video_item_search_duration_horizontal_padding"
         android:paddingVertical="@dimen/video_item_search_duration_vertical_padding"
         android:textAllCaps="true"
