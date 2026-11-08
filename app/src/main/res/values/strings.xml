@@ -34,6 +34,8 @@
     <string name="subscription_update_failed">Could not update subscription</string>
     <string name="show_info">Show info</string>
     <string name="tab_subscriptions">Subscriptions</string>
+    <string name="bottom_nav_home">Home</string>
+    <string name="bottom_nav_feed">Feed</string>
     <string name="tab_bookmarks">Bookmarked Playlists</string>
     <string name="tab_bookmarks_short">Playlists</string>
     <string name="tab_choose">Choose Tab</string>

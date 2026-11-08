@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  eggplay: bottom navigation menu (YouTube-style), wired in MainActivity.
+  SPDX-License-Identifier: GPL-3.0-or-later
+  -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/bottom_nav_home"
+        android:icon="@drawable/ic_home"
+        android:title="@string/bottom_nav_home" />
+    <item
+        android:id="@+id/bottom_nav_feed"
+        android:icon="@drawable/ic_subscriptions"
+        android:title="@string/bottom_nav_feed" />
+    <item
+        android:id="@+id/bottom_nav_subscriptions"
+        android:icon="@drawable/ic_tv"
+        android:title="@string/tab_subscriptions" />
+    <item
+        android:id="@+id/bottom_nav_bookmarks"
+        android:icon="@drawable/ic_bookmark"
+        android:title="@string/tab_bookmarks_short" />
+</menu>

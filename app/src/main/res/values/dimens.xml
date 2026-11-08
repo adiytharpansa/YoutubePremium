@@ -85,6 +85,8 @@
     <dimen name="video_item_detail_like_image_width">18sp</dimen>
     <dimen name="video_item_detail_heart_image_size">18sp</dimen>
     <dimen name="channel_avatar_size">70dp</dimen>
+    <!-- eggplay: height reserved at the bottom of the screen for the bottom navigation -->
+    <dimen name="bottom_nav_height">56dp</dimen>
     <dimen name="sub_channel_avatar_size">35dp</dimen>
     <dimen name="mini_player_height">60dp</dimen>
     <!-- Paddings & Margins -->
