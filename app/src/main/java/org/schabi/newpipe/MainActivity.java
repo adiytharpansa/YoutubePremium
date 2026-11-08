@@ -58,6 +58,7 @@ import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import org.schabi.newpipe.databinding.ActivityMainBinding;
@@ -76,7 +77,10 @@ import org.schabi.newpipe.fragments.MainFragment;
 import org.schabi.newpipe.fragments.detail.VideoDetailFragment;
 import org.schabi.newpipe.fragments.list.comments.CommentRepliesFragment;
 import org.schabi.newpipe.fragments.list.search.SearchFragment;
+import org.schabi.newpipe.local.bookmark.BookmarkFragment;
+import org.schabi.newpipe.local.feed.FeedFragment;
 import org.schabi.newpipe.local.feed.notifications.NotificationWorker;
+import org.schabi.newpipe.local.subscription.SubscriptionFragment;
 import org.schabi.newpipe.player.Player;
 import org.schabi.newpipe.player.event.OnKeyDownListener;
 import org.schabi.newpipe.player.helper.PlayerHolder;
@@ -183,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (final Exception e) {
             ErrorUtil.showUiErrorSnackbar(this, "Setting up drawer", e);
         }
+        setupBottomNavigation();
         if (DeviceUtils.isTv(this)) {
             FocusOverlayView.setupFocusObserver(this);
         }
@@ -318,6 +323,107 @@ public class MainActivity extends AppCompatActivity {
                 .add(R.id.menu_options_about_group, ITEM_ID_ABOUT, ORDER, R.string.tab_about)
                 .setIcon(R.drawable.ic_info_outline);
     }
+
+    // region eggplay: bottom navigation
+
+    private boolean updatingBottomNavSelection;
+
+    /**
+     * eggplay: wires the YouTube-style bottom navigation. Its destinations call the
+     * same NavigationHelper entry points as the navigation drawer, and its
+     * visibility is kept in sync with the visible fragment and the player sheet.
+     */
+    private void setupBottomNavigation() {
+        final BottomNavigationView bottomNav = mainBinding.bottomNavigation;
+        bottomNav.setOnItemSelectedListener(item -> {
+            if (updatingBottomNavSelection) {
+                return true;
+            }
+            final int itemId = item.getItemId();
+            final FragmentManager fm = getSupportFragmentManager();
+            if (itemId == R.id.bottom_nav_home) {
+                NavigationHelper.gotoMainFragment(fm);
+            } else if (itemId == R.id.bottom_nav_feed) {
+                NavigationHelper.openFeedFragment(fm);
+            } else if (itemId == R.id.bottom_nav_subscriptions) {
+                NavigationHelper.openSubscriptionFragment(fm);
+            } else if (itemId == R.id.bottom_nav_bookmarks) {
+                NavigationHelper.openBookmarksFragment(fm);
+            } else {
+                return false;
+            }
+            return true;
+        });
+        getSupportFragmentManager().addOnBackStackChangedListener(
+                this::updateBottomNavigationState);
+        BottomSheetBehavior.from(mainBinding.fragmentPlayerHolder)
+                .addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                    @Override
+                    public void onStateChanged(@NonNull final View bottomSheet,
+                                               final int newState) {
+                        updateBottomNavigationState();
+                    }
+
+                    @Override
+                    public void onSlide(@NonNull final View bottomSheet,
+                                        final float slideOffset) {
+                        // not needed
+                    }
+                });
+        updateBottomNavigationState();
+    }
+
+    /**
+     * eggplay: shows the bottom navigation only on the main top-level destinations
+     * (main page, feed, subscriptions, bookmarks) and only while the player sheet
+     * is not covering the bottom of the screen (expanded player or mini player).
+     * Also keeps the fragment holder's bottom margin and the selected item in sync.
+     */
+    private void updateBottomNavigationState() {
+        final BottomNavigationView bottomNav = mainBinding.bottomNavigation;
+        final Fragment current = getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_holder);
+
+        final int selectedId;
+        if (current instanceof MainFragment) {
+            selectedId = R.id.bottom_nav_home;
+        } else if (current instanceof FeedFragment) {
+            selectedId = R.id.bottom_nav_feed;
+        } else if (current instanceof SubscriptionFragment) {
+            selectedId = R.id.bottom_nav_subscriptions;
+        } else if (current instanceof BookmarkFragment) {
+            selectedId = R.id.bottom_nav_bookmarks;
+        } else {
+            selectedId = 0;
+        }
+
+        final BottomSheetBehavior<FragmentContainerView> playerBehavior =
+                BottomSheetBehavior.from(mainBinding.fragmentPlayerHolder);
+        final boolean playerCoveringBottom = playerBehavior.getState()
+                != BottomSheetBehavior.STATE_HIDDEN
+                && !(playerBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED
+                && playerBehavior.getPeekHeight() == 0);
+
+        final boolean show = selectedId != 0 && !playerCoveringBottom;
+        bottomNav.setVisibility(show ? View.VISIBLE : View.GONE);
+
+        final ViewGroup.MarginLayoutParams holderParams =
+                (ViewGroup.MarginLayoutParams) mainBinding.fragmentHolder.getLayoutParams();
+        final int targetMargin = show ? getResources()
+                .getDimensionPixelSize(R.dimen.bottom_nav_height) : 0;
+        if (holderParams.bottomMargin != targetMargin) {
+            holderParams.bottomMargin = targetMargin;
+            mainBinding.fragmentHolder.setLayoutParams(holderParams);
+        }
+
+        if (show && bottomNav.getSelectedItemId() != selectedId) {
+            updatingBottomNavSelection = true;
+            bottomNav.setSelectedItemId(selectedId);
+            updatingBottomNavSelection = false;
+        }
+    }
+
+    // endregion
 
     private boolean drawerItemSelected(final MenuItem item) {
         final int groupId = item.getGroupId();
