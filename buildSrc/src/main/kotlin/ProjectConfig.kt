@@ -13,3 +13,5 @@ const val NEWPIPE_VERSION_NAME = "0.29.2"
 
 const val NEWPIPE_APPLICATION_ID_OLD = "org.schabi.newpipe"
 const val NEWPIPE_APPLICATION_ID_NEW = "net.newpipe.app"
+
+const val EGGPLAY_APPLICATION_ID = "app.eggplay.player"
