@@ -8,7 +8,7 @@
     <string name="navigate_back">Back</string>
 
     <!-- AboutScreen -->
-    <string name="title_activity_about">About NewPipe</string>
+    <string name="title_activity_about">About eggplay</string>
     <string name="title_licenses">Third-party Licenses</string>
     <string name="license">By %1$s under %2$s</string>
     <string name="tab_about">About \u0026 FAQ</string>
@@ -246,7 +246,7 @@
     <string name="delete_search_history_alert">Delete entire search history?</string>
     <string name="search_history_deleted">Search history deleted</string>
     <string name="clear_cookie_title">Clear reCAPTCHA cookies</string>
-    <string name="clear_cookie_summary">Clear cookies that NewPipe stores when you solve a reCAPTCHA</string>
+    <string name="clear_cookie_summary">Clear cookies that eggplay stores when you solve a reCAPTCHA</string>
     <string name="recaptcha_cookies_cleared">reCAPTCHA cookies have been cleared</string>
 
 
