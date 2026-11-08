@@ -72,6 +72,10 @@ configure<ApplicationExtension> {
         }
 
         release {
+            // eggplay: sign release builds with the debug key so the APK is
+            // installable for personal distribution (not for Play Store).
+            // Replace with a private keystore before any store release.
+            signingConfig = signingConfigs.getByName("debug")
             System.getProperty("packageSuffix")?.let { suffix ->
                 applicationIdSuffix = suffix
                 resValue("string", "app_name", "eggplay $suffix")
