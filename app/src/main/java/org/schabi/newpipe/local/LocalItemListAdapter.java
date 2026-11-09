@@ -240,6 +240,12 @@ public class LocalItemListAdapter extends RecyclerView.Adapter<RecyclerView.View
     }
 
     @Override
+    public void onAttachedToRecyclerView(@NonNull final RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        org.schabi.newpipe.preview.InlinePreview.attach(recyclerView);
+    }
+
+    @Override
     public int getItemCount() {
         int count = localItems.size();
         if (hasHeader()) {

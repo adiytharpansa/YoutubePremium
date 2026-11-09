@@ -287,7 +287,7 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         // EggPlay: chips have no square ripple
         tabLayout.setTabRippleColor(ColorStateList.valueOf(Color.TRANSPARENT));
         tabLayout.setTabIconTint(ColorStateList.valueOf(iconColor));
-        tabLayout.setSelectedTabIndicatorColor(Color.parseColor("#FC6401"));
+        tabLayout.setSelectedTabIndicatorColor(Color.parseColor("#FF5E0A"));
     }
 
     @Override

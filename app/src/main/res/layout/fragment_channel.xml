@@ -148,7 +148,7 @@
             android:layout_height="wrap_content"
             android:background="?attr/windowBackground"
             app:tabGravity="fill"
-            app:tabIndicatorColor="#FC6401"
+            app:tabIndicatorColor="#FF5E0A"
             app:tabIndicatorHeight="3dp"
             app:tabMode="scrollable"
             app:tabPaddingEnd="16dp"

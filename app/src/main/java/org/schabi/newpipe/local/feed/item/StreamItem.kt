@@ -19,6 +19,7 @@ import org.schabi.newpipe.extractor.stream.StreamType.LIVE_STREAM
 import org.schabi.newpipe.extractor.stream.StreamType.POST_LIVE_AUDIO_STREAM
 import org.schabi.newpipe.extractor.stream.StreamType.POST_LIVE_STREAM
 import org.schabi.newpipe.extractor.stream.StreamType.VIDEO_STREAM
+import org.schabi.newpipe.preview.InlinePreview
 import org.schabi.newpipe.util.CardMetaLine
 import org.schabi.newpipe.util.Localization
 import org.schabi.newpipe.util.StreamTypeUtil
@@ -64,6 +65,9 @@ data class StreamItem(
     }
 
     override fun bind(viewBinding: ListStreamItemBinding, position: Int) {
+        if (itemVersion == ItemVersion.CARD) {
+            InlinePreview.bind(viewBinding.root, stream.serviceId, stream.url, stream.streamType)
+        }
         viewBinding.itemVideoTitleView.text = stream.title
         viewBinding.itemUploaderView.text = stream.uploader
 

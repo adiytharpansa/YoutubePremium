@@ -13,6 +13,7 @@ import org.schabi.newpipe.extractor.InfoItem;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
 import org.schabi.newpipe.info_list.InfoItemBuilder;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
+import org.schabi.newpipe.preview.InlinePreview;
 import org.schabi.newpipe.util.CardMetaLine;
 import org.schabi.newpipe.util.NavigationHelper;
 import org.schabi.newpipe.util.StreamAvatars;
@@ -43,6 +44,7 @@ public class StreamCardInfoItemHolder extends StreamInfoItemHolder {
         final StreamInfoItem item = (StreamInfoItem) infoItem;
 
         CardMetaLine.merge(itemUploaderView, itemAdditionalDetails, item.getUploaderName());
+        InlinePreview.bind(itemView, item.getServiceId(), item.getUrl(), item.getStreamType());
 
         CoilHelper.INSTANCE.loadAvatar(itemUploaderAvatarView, StreamAvatars.of(item));
 

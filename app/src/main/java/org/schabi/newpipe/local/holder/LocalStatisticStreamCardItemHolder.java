@@ -4,6 +4,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.schabi.newpipe.R;
+import org.schabi.newpipe.preview.InlinePreview;
 import org.schabi.newpipe.database.LocalItem;
 import org.schabi.newpipe.database.stream.StreamStatisticsEntry;
 import org.schabi.newpipe.local.LocalItemBuilder;
@@ -37,6 +38,8 @@ public class LocalStatisticStreamCardItemHolder extends LocalStatisticStreamItem
 
         CardMetaLine.merge(itemUploaderView, itemAdditionalDetails,
                 item.getStreamEntity().getUploader());
+        InlinePreview.bind(itemView, item.getStreamEntity().getServiceId(),
+                item.getStreamEntity().getUrl(), item.getStreamEntity().getStreamType());
 
         itemMoreButton.setOnClickListener(view -> {
             if (itemBuilder.getOnItemSelectedListener() != null) {

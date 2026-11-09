@@ -13,7 +13,7 @@
         android:background="?attr/windowBackground"
         app:tabRippleColor="@android:color/transparent"
         app:tabBackground="@drawable/chip_tab_background"
-        app:tabIndicatorColor="#FC6401"
+        app:tabIndicatorColor="#FF5E0A"
         app:tabIndicatorHeight="0dp"
         app:tabTextColor="@color/chip_text"
         app:tabSelectedTextColor="@color/chip_text_selected"
