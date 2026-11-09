@@ -911,7 +911,10 @@
     <string name="api23_requirement_dialog_message">Unfortunately EggPlay depends on a few libraries that dropped support for Android 5.0 and 5.1. The next EggPlay release will therefore only work on devices with Android 6 or higher, sadly. Read more in the blogpost.</string>
     <string name="api23_requirement_dialog_blogpost">Blogpost</string>
     <string name="inline_preview_title">Autoplay preview</string>
-    <string name="inline_preview_summary">Play videos automatically in the list as you scroll</string>
+    <string name="inline_preview_summary">Play videos in the list as you scroll. Never plays in battery saver or Data Saver.</string>
+    <string name="inline_preview_mode_wifi">Wi-Fi / unmetered only</string>
+    <string name="inline_preview_mode_always">Always (uses mobile data)</string>
+    <string name="inline_preview_mode_off">Off</string>
     <string name="inline_preview_mute">Mute</string>
     <string name="inline_preview_unmute">Unmute</string>
 

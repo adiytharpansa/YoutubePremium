@@ -51,13 +51,16 @@
         app:iconSpaceReserved="false"
         app:useSimpleSummaryProvider="true" />
 
-    <SwitchPreferenceCompat
-        android:defaultValue="true"
-        android:key="@string/inline_preview_key"
+    <ListPreference
+        android:defaultValue="wifi"
+        android:entries="@array/inline_preview_mode_entries"
+        android:entryValues="@array/inline_preview_mode_values"
+        android:key="@string/inline_preview_mode_key"
         android:summary="@string/inline_preview_summary"
         android:title="@string/inline_preview_title"
         app:singleLineTitle="false"
-        app:iconSpaceReserved="false" />
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
 
     <Preference
         android:key="@string/caption_settings_key"
