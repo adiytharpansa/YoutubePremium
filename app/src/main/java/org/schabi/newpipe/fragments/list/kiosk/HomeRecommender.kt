@@ -53,8 +53,8 @@ object HomeRecommender {
     /** Live streams are shown only in the Live tab, never in the Home feed. */
     @JvmStatic
     fun isLive(item: StreamInfoItem): Boolean {
-        return item.streamType == StreamType.LIVE_STREAM
-            || item.streamType == StreamType.AUDIO_LIVE_STREAM
+        return item.streamType == StreamType.LIVE_STREAM ||
+            item.streamType == StreamType.AUDIO_LIVE_STREAM
     }
 
     @JvmStatic
@@ -105,11 +105,10 @@ object HomeRecommender {
                 s += min(0.8, 0.35 * tokens.count { it in profile.searchTokens })
             }
             val url = item.url
+            // Fully watched videos sink; ones started but unfinished get a small boost.
             when {
-                url in profile.finishedUrls -> s -= 3.0 // already watched
-
-                url in profile.resumeUrls -> s += 0.6 // started but not finished
-
+                url in profile.finishedUrls -> s -= 3.0
+                url in profile.resumeUrls -> s += 0.6
                 url in profile.watchedUrls -> s -= 0.8
             }
             s -= min(1.5, 0.5 * (impressions[url] ?: 0)) // seen before, not clicked
