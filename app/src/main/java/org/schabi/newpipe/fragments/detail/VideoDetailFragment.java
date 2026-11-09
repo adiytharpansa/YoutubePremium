@@ -105,6 +105,7 @@ import org.schabi.newpipe.player.playqueue.PlayQueueItem;
 import org.schabi.newpipe.player.playqueue.SinglePlayQueue;
 import org.schabi.newpipe.player.ui.MainPlayerUi;
 import org.schabi.newpipe.player.ui.VideoPlayerUi;
+import org.schabi.newpipe.preview.InlinePreview;
 import org.schabi.newpipe.util.Constants;
 import org.schabi.newpipe.util.DeviceUtils;
 import org.schabi.newpipe.util.ExtractorHelper;
@@ -424,6 +425,7 @@ public final class VideoDetailFragment
         positionSubscriber = null;
         currentWorker = null;
         bottomSheetBehavior.removeBottomSheetCallback(bottomSheetCallback);
+        InlinePreview.setSuspended(false);
 
         if (activity.isFinishing()) {
             playQueue = null;
@@ -2523,6 +2525,8 @@ public final class VideoDetailFragment
         if (newState != BottomSheetBehavior.STATE_DRAGGING
                 && newState != BottomSheetBehavior.STATE_SETTLING) {
             lastStableBottomSheetState = newState;
+            // EggPlay: feed previews pause while the player covers the lists
+            InlinePreview.setSuspended(newState == BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 }

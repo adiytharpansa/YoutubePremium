@@ -155,10 +155,13 @@ public final class InlinePreviewController {
         resumed = value;
         handler.removeCallbacks(tick);
         if (value) {
+            // A failure may have been a short network drop: give every video another chance
+            failed.clear();
             handler.post(tick);
         } else {
             stopPlayback();
             prefetchDisposables.clear();
+            prefetched.clear();
             releasePlayer();
         }
     }
@@ -238,6 +241,12 @@ public final class InlinePreviewController {
     }
 
     private void evaluate() {
+        if (InlinePreview.isSuspended()) {
+            // The main player is open on top: free the decoder and the audio focus for it
+            stopPlayback();
+            releasePlayer();
+            return;
+        }
         if (!isEnabled()) {
             stopPlayback();
             return;
@@ -526,6 +535,9 @@ public final class InlinePreviewController {
     }
 
     private void stopPlayback() {
+        if (loadDisposable == null && host == null && current == null) {
+            return; // nothing is playing, this runs on every tick
+        }
         if (loadDisposable != null) {
             loadDisposable.dispose();
             loadDisposable = null;
