@@ -14,7 +14,23 @@ import org.schabi.newpipe.extractor.stream.StreamType;
  * Card binders call {@link #bind}; list owners call {@link #attach}.
  */
 public final class InlinePreview {
+    private static volatile boolean suspended;
+
     private InlinePreview() {
+    }
+
+    /**
+     * Pauses every inline preview, e.g. while the full-screen player covers the lists.
+     * The previews would otherwise keep decoding (and fight for audio focus) under the player.
+     *
+     * @param value true to pause every preview, false to let them run again
+     */
+    public static void setSuspended(final boolean value) {
+        suspended = value;
+    }
+
+    static boolean isSuspended() {
+        return suspended;
     }
 
     /** What a card currently shows; stored as a view tag so the controller stays data-agnostic. */
