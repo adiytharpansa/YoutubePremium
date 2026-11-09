@@ -116,7 +116,18 @@ public final class Localization {
     }
 
     public static Locale getPreferredLocale(@NonNull final Context context) {
-        return getLocaleFromPrefs(context, R.string.content_language_key);
+        final Locale locale = getLocaleFromPrefs(context, R.string.content_language_key);
+        if (!locale.getCountry().isEmpty()) {
+            return locale;
+        }
+        // EggPlay: a language-only preference (e.g. "id") would produce the malformed
+        // localization code "id-", which services answer with unparseable responses;
+        // complete it with the preferred content country instead.
+        final String country = getPreferredContentCountry(context).getCountryCode();
+        if (country.isEmpty()) {
+            return locale;
+        }
+        return new Locale.Builder().setLocale(locale).setRegion(country).build();
     }
 
     public static Locale getAppLocale() {

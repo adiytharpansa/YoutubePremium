@@ -53,14 +53,20 @@ public final class NewPipeSettings {
         // first run migrations, then setDefaultValues, since the latter requires the correct types
         MigrationManager.runMigrationsIfNeeded(context);
 
-        // EggPlay: Indonesian content (language and country) by default on first run
+        // EggPlay: Indonesian content (language and country) by default on first run.
+        // The language must be a full locale tag ("id-ID", not "id"): a bare language
+        // code produces the malformed localization "id-", which makes YouTube return
+        // responses the extractor cannot parse (broken Home feed in v1.6.0/v1.6.1),
+        // so a stored bare "id" from those versions is repaired here as well.
         final SharedPreferences langPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         final String contentLangKey = context.getString(R.string.content_language_key);
         final String contentCountryKey = context.getString(R.string.content_country_key);
-        if (!langPrefs.contains(contentLangKey) || !langPrefs.contains(contentCountryKey)) {
+        final boolean repairLang = "id".equals(langPrefs.getString(contentLangKey, null));
+        if (!langPrefs.contains(contentLangKey) || !langPrefs.contains(contentCountryKey)
+                || repairLang) {
             final SharedPreferences.Editor langEditor = langPrefs.edit();
-            if (!langPrefs.contains(contentLangKey)) {
-                langEditor.putString(contentLangKey, "id");
+            if (!langPrefs.contains(contentLangKey) || repairLang) {
+                langEditor.putString(contentLangKey, "id-ID");
             }
             if (!langPrefs.contains(contentCountryKey)) {
                 langEditor.putString(contentCountryKey, "ID");
