@@ -2,13 +2,17 @@ package org.schabi.newpipe.settings;
 
 import static org.schabi.newpipe.extractor.utils.Utils.isNullOrEmpty;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import org.schabi.newpipe.App;
@@ -49,6 +53,21 @@ public final class NewPipeSettings {
         // first run migrations, then setDefaultValues, since the latter requires the correct types
         MigrationManager.runMigrationsIfNeeded(context);
 
+        // EggPlay: Indonesian content (language and country) by default on first run
+        final SharedPreferences langPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final String contentLangKey = context.getString(R.string.content_language_key);
+        final String contentCountryKey = context.getString(R.string.content_country_key);
+        if (!langPrefs.contains(contentLangKey) || !langPrefs.contains(contentCountryKey)) {
+            final SharedPreferences.Editor langEditor = langPrefs.edit();
+            if (!langPrefs.contains(contentLangKey)) {
+                langEditor.putString(contentLangKey, "id");
+            }
+            if (!langPrefs.contains(contentCountryKey)) {
+                langEditor.putString(contentCountryKey, "ID");
+            }
+            langEditor.apply();
+        }
+
         // readAgain is true so that if new settings are added their default value is set
         PreferenceManager.setDefaultValues(context, R.xml.main_settings, true);
         PreferenceManager.setDefaultValues(context, R.xml.video_audio_settings, true);
@@ -67,29 +86,100 @@ public final class NewPipeSettings {
         disableMediaTunnelingIfNecessary(context);
     }
 
-    static void saveDefaultVideoDownloadDirectory(final Context context) {
+    public static void saveDefaultVideoDownloadDirectory(final Context context) {
         saveDefaultDirectory(context, R.string.download_path_video_key,
                 Environment.DIRECTORY_MOVIES);
     }
 
-    static void saveDefaultAudioDownloadDirectory(final Context context) {
+    public static void saveDefaultAudioDownloadDirectory(final Context context) {
         saveDefaultDirectory(context, R.string.download_path_audio_key,
                 Environment.DIRECTORY_MUSIC);
     }
 
+    /**
+     * Makes sure a usable download folder is saved, so the user is never forced to pick one
+     * with a system file manager (which some devices don't have at all).
+     *
+     * @param context the context
+     */
+    public static void ensureDownloadDirectories(final Context context) {
+        saveDefaultVideoDownloadDirectory(context);
+        saveDefaultAudioDownloadDirectory(context);
+    }
+
     private static void saveDefaultDirectory(final Context context, final int keyID,
                                              final String defaultDirectoryName) {
-        if (!useStorageAccessFramework(context)) {
-            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            final String key = context.getString(keyID);
-            final String downloadPath = prefs.getString(key, null);
-            if (!isNullOrEmpty(downloadPath)) {
+        if (useStorageAccessFramework(context)) {
+            return;
+        }
+
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final String key = context.getString(keyID);
+        final String downloadPath = prefs.getString(key, null);
+
+        if (!isNullOrEmpty(downloadPath)) {
+            final boolean isSafPath = downloadPath.startsWith("content:");
+            final boolean isOldStylePath = downloadPath.charAt(0) == File.separatorChar;
+            final boolean isAppSpecificFallback =
+                    downloadPath.contains("/Android/data/" + context.getPackageName());
+            // keep the current path, unless it can't work in direct (non-SAF) mode, or it is the
+            // app-private fallback although shared storage is accessible now
+            if (!isSafPath && !isOldStylePath
+                    && !(isAppSpecificFallback && canUseSharedStorage(context))) {
                 return;
             }
+        }
 
-            final SharedPreferences.Editor spEditor = prefs.edit();
-            spEditor.putString(key, getNewPipeChildFolderPathForDir(getDir(defaultDirectoryName)));
-            spEditor.apply();
+        prefs.edit()
+                .putString(key, getDefaultDownloadDir(context, defaultDirectoryName)
+                        .toURI().toString())
+                .apply();
+    }
+
+    /**
+     * @param context the context
+     * @return {@code true} if files can be written directly to the public storage of the device
+     */
+    public static boolean canUseSharedStorage(final Context context) {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                || Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+                || ContextCompat.checkSelfPermission(context,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
+     * Default download folder, created automatically (no picker, no permission dialog):
+     * {@code Download/EggPlay} on Android 10+, {@code Movies|Music/EggPlay} before that.
+     * If the public folder can't be written, the app's own folder on the device storage is used.
+     *
+     * @param context the context
+     * @param defaultDirectoryName the name of the default directory (e.g. Movies or Music)
+     * @return the default download folder
+     */
+    @NonNull
+    public static File getDefaultDownloadDir(final Context context,
+                                             final String defaultDirectoryName) {
+        if (canUseSharedStorage(context)) {
+            final File publicDir = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                    ? new File(getDir(Environment.DIRECTORY_DOWNLOADS), "EggPlay")
+                    : new File(getDir(defaultDirectoryName), "EggPlay");
+            if (isWritableFolder(publicDir)) {
+                return publicDir;
+            }
+        }
+        final File appDir = context.getExternalFilesDir(defaultDirectoryName);
+        return appDir != null ? appDir : new File(context.getFilesDir(), defaultDirectoryName);
+    }
+
+    private static boolean isWritableFolder(final File dir) {
+        try {
+            if (!dir.isDirectory() && !dir.mkdirs()) {
+                return false;
+            }
+            final File probe = File.createTempFile(".eggplay", ".tmp", dir);
+            return probe.delete() || !probe.exists();
+        } catch (final Exception e) {
+            return false;
         }
     }
 
@@ -98,23 +188,35 @@ public final class NewPipeSettings {
         return new File(Environment.getExternalStorageDirectory(), defaultDirectoryName);
     }
 
-    private static String getNewPipeChildFolderPathForDir(final File dir) {
-        return new File(dir, "NewPipe").toURI().toString();
+    /**
+     * @param context the context
+     * @return {@code true} if a system folder picker (Storage Access Framework) is available
+     */
+    public static boolean isSafPickerAvailable(final Context context) {
+        try {
+            return new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                    .resolveActivity(context.getPackageManager()) != null;
+        } catch (final Exception e) {
+            return false;
+        }
     }
 
+    /**
+     * SAF is only used if the user turned it on <b>and</b> the device actually has a folder picker.
+     * Otherwise downloads go straight to the device storage.
+     *
+     * @param context the context
+     * @return {@code true} if the Storage Access Framework should be used
+     */
     public static boolean useStorageAccessFramework(final Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return true;
-        } else if (DeviceUtils.isFireTv()) {
-            // There's a FireOS bug which prevents SAF open/close dialogs from being confirmed with
-            // a remote (see #6455).
+        if (!isSafPickerAvailable(context)) {
             return false;
         }
 
         final String key = context.getString(R.string.storage_use_saf);
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        return prefs.getBoolean(key, true);
+        return prefs.getBoolean(key, false);
     }
 
     private static boolean showSearchSuggestions(final Context context,

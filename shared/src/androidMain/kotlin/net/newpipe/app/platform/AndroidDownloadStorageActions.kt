@@ -32,7 +32,7 @@ class AndroidDownloadStorageActions(context: Context) : DownloadStorageActions {
         get() = host != null
 
     override val useStorageAccessFramework: Boolean
-        get() = host?.useStorageAccessFramework ?: true
+        get() = host?.useStorageAccessFramework ?: false
 
     override val isStorageAccessFrameworkConfigurable: Boolean
         get() = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q

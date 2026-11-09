@@ -212,6 +212,9 @@ public class DownloadDialog extends DialogFragment
         // dialog is being dismissed in onViewCreated()
         context = getContext();
 
+        // make sure a download folder on the device storage is set (no file manager required)
+        NewPipeSettings.ensureDownloadDirectories(context);
+
         setStyle(STYLE_NO_TITLE, ThemeHelper.getDialogTheme(context));
         Bridge.restoreInstanceState(this, savedInstanceState);
 
@@ -744,6 +747,45 @@ public class DownloadDialog extends DialogFragment
                 .show();
     }
 
+    /**
+     * Sets the default folder on the device storage as the download folder, without asking
+     * the user to pick one.
+     *
+     * @return {@code true} if a valid direct folder is now set
+     */
+    private boolean useDefaultDownloadFolder() {
+        final boolean audio =
+                dialogBinding.videoAudioGroup.getCheckedRadioButtonId() == R.id.audio_button;
+        if (audio) {
+            NewPipeSettings.saveDefaultAudioDownloadDirectory(context);
+        } else {
+            NewPipeSettings.saveDefaultVideoDownloadDirectory(context);
+        }
+
+        final String path = prefs.getString(getString(audio
+                ? R.string.download_path_audio_key : R.string.download_path_video_key), null);
+        if (path == null || path.isEmpty()) {
+            return false;
+        }
+
+        try {
+            final StoredDirectoryHelper helper = new StoredDirectoryHelper(context,
+                    Uri.parse(path), audio ? DownloadManager.TAG_AUDIO : DownloadManager.TAG_VIDEO);
+            if (!helper.isDirect()) {
+                return false;
+            }
+            if (audio) {
+                mainStorageAudio = helper;
+            } else {
+                mainStorageVideo = helper;
+            }
+            return true;
+        } catch (final Exception e) {
+            Log.e(TAG, "Failed to use the default download folder", e);
+            return false;
+        }
+    }
+
     private void launchDirectoryPicker(final ActivityResultLauncher<Intent> launcher) {
         NoFileManagerSafeGuard.launchSafe(launcher, StoredDirectoryHelper.getPicker(context), TAG,
                 context);
@@ -808,6 +850,13 @@ public class DownloadDialog extends DialogFragment
             // - Download folder uses SAF while SAF is disabled
             // - Download folder doesn't use SAF while SAF is enabled
             // - Download folder uses SAF but the user manually revoked access to it
+            if (!NewPipeSettings.useStorageAccessFramework(context)
+                    && useDefaultDownloadFolder()) {
+                // saved the default folder on the device storage, try again (only once)
+                prepareSelectedDownload();
+                return;
+            }
+
             Toast.makeText(context, getString(R.string.no_dir_yet),
                     Toast.LENGTH_LONG).show();
 

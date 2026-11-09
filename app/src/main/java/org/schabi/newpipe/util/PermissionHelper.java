@@ -32,6 +32,11 @@ public final class PermissionHelper {
             return true; // Storage permissions are not needed for SAF
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Android 10+: downloads go to Download/EggPlay, which needs no permission
+            return true;
+        }
+
         if (!checkReadStoragePermissions(activity, requestCode)) {
             return false;
         }

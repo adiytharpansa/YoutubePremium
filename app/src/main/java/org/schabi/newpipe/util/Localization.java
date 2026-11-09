@@ -41,6 +41,8 @@ import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -399,7 +401,8 @@ public final class Localization {
                                                @Nullable final DateWrapper parsed,
                                                @Nullable final String textual) {
         if (parsed == null) {
-            return textual;
+            final String localized = localizeEnglishTimeAgo(textual);
+            return localized != null ? localized : textual;
         } else if (DEBUG && context != null && PreferenceManager
                 .getDefaultSharedPreferences(context)
                 .getBoolean(context.getString(R.string.show_original_time_ago_key), false)) {
@@ -407,6 +410,44 @@ public final class Localization {
         } else {
             return relativeTime(parsed.offsetDateTime());
         }
+    }
+
+    private static final Pattern ENGLISH_TIME_AGO = Pattern.compile(
+            "^\\s*(?:Streamed\\s+|Premiered\\s+)?(\\d+)\\s+"
+                    + "(second|minute|hour|day|week|month|year)s?\\s+ago\\s*(\\(edited\\))?\\s*$",
+            Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Turns an English text like "2 weeks ago" (sent by the service when the extractor could
+     * not parse it) into the app language, e.g. "2 minggu lalu".
+     *
+     * @param textual the English time-ago text sent by the service, may be {@code null}
+     * @return the localized text, or {@code null} if {@code textual} doesn't look like that
+     */
+    @Nullable
+    private static String localizeEnglishTimeAgo(@Nullable final String textual) {
+        if (textual == null) {
+            return null;
+        }
+        final Matcher m = ENGLISH_TIME_AGO.matcher(textual);
+        if (!m.matches()) {
+            return null;
+        }
+        final long amount = Long.parseLong(m.group(1));
+        final OffsetDateTime now = OffsetDateTime.now();
+        final OffsetDateTime then;
+        switch (m.group(2).toLowerCase(Locale.ROOT)) {
+            case "second": then = now.minusSeconds(amount); break;
+            case "minute": then = now.minusMinutes(amount); break;
+            case "hour": then = now.minusHours(amount); break;
+            case "day": then = now.minusDays(amount); break;
+            case "week": then = now.minusWeeks(amount); break;
+            case "month": then = now.minusMonths(amount); break;
+            default: then = now.minusYears(amount); break;
+        }
+        final String lang = getAppLocale().getLanguage();
+        final String edited = "in".equals(lang) || "id".equals(lang) ? " (diedit)" : "";
+        return relativeTime(then) + (m.group(3) != null ? edited : "");
     }
 
     private static Locale getLocaleFromPrefs(@NonNull final Context context,

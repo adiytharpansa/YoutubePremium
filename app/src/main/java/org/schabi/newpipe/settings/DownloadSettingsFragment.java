@@ -5,7 +5,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -61,10 +60,10 @@ public class DownloadSettingsFragment extends BasePreferenceFragment {
 
         final SwitchPreferenceCompat prefUseSaf = findPreference(storageUseSafPreference);
         prefUseSaf.setChecked(NewPipeSettings.useStorageAccessFramework(ctx));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (!NewPipeSettings.isSafPickerAvailable(ctx)) {
+            // no system folder picker on this device: downloads go straight to the device storage
             prefUseSaf.setEnabled(false);
-            prefUseSaf.setSummary(R.string.downloads_storage_use_saf_summary_api_29);
-            prefStorageAsk.setSummary(R.string.downloads_storage_ask_summary_no_saf_notice);
+            prefUseSaf.setChecked(false);
         }
 
         updatePreferencesSummary();

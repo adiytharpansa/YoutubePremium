@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Opening Theme -->
     <style name="Base.V21.OpeningTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
@@ -14,7 +14,7 @@
     <style name="OpeningTheme" parent="Base.OpeningTheme" />
 
     <!-- Base Theme -->
-    <style name="Base.V21" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="Base.V21" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="actionColor">@color/white</item>
         <item name="floatingActionButtonStyle">@style/FloatingActionButtonTheme</item>
         <item name="toolbarSearchColor">@color/white</item>
@@ -26,12 +26,29 @@
     <style name="Base.V21.LightTheme" parent="Base">
         <item name="colorPrimary">@color/light_youtube_primary_color</item>
         <item name="colorPrimaryDark">@color/light_youtube_primary_color</item>
-        <item name="colorAccent">@color/light_youtube_accent_color</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
         <item name="android:windowBackground">@color/light_background_color</item>
         <item name="windowBackground">@color/light_background_color</item>
         <!-- EggPlay: status bar matches the toolbar surface -->
         <item name="android:statusBarColor">@color/light_background_color</item>
         <item name="android:windowLightStatusBar">true</item>
+        <!-- EggPlay: Material 3 color roles (neutral + YouTube red) -->
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#FFDAD6</item>
+        <item name="colorOnPrimaryContainer">#410002</item>
+        <item name="colorSecondary">#5F5F5F</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorSecondaryContainer">#EDEDED</item>
+        <item name="colorOnSecondaryContainer">#1F1F1F</item>
+        <item name="colorSurface">@color/light_background_color</item>
+        <item name="colorOnSurface">#0F0F0F</item>
+        <item name="colorSurfaceVariant">#F2F2F2</item>
+        <item name="colorOnSurfaceVariant">#606060</item>
+        <item name="colorOutline">#909090</item>
+        <item name="colorOutlineVariant">#E5E5E5</item>
+        <!-- EggPlay: navigation bar blends with the app background -->
+        <item name="android:navigationBarColor">@color/light_background_color</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
 
         <item name="separator_color">@color/light_separator_color</item>
         <item name="contrast_background_color">@color/light_contrast_background_color</item>
@@ -53,11 +70,28 @@
     <style name="Base.V21.DarkTheme" parent="Base">
         <item name="colorPrimary">@color/dark_youtube_primary_color</item>
         <item name="colorPrimaryDark">@color/dark_youtube_primary_color</item>
-        <item name="colorAccent">@color/dark_youtube_accent_color</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
         <item name="android:windowBackground">@color/dark_background_color</item>
         <item name="windowBackground">@color/dark_background_color</item>
         <item name="android:statusBarColor">@color/dark_background_color</item>
         <item name="android:windowLightStatusBar">false</item>
+        <!-- EggPlay: Material 3 color roles (neutral + YouTube red) -->
+        <item name="colorOnPrimary">#000000</item>
+        <item name="colorPrimaryContainer">#7A0008</item>
+        <item name="colorOnPrimaryContainer">#FFDAD6</item>
+        <item name="colorSecondary">#C7C7C7</item>
+        <item name="colorOnSecondary">#1F1F1F</item>
+        <item name="colorSecondaryContainer">#3A3A3A</item>
+        <item name="colorOnSecondaryContainer">#EDEDED</item>
+        <item name="colorSurface">@color/dark_background_color</item>
+        <item name="colorOnSurface">#F1F1F1</item>
+        <item name="colorSurfaceVariant">#272727</item>
+        <item name="colorOnSurfaceVariant">#AAAAAA</item>
+        <item name="colorOutline">#717171</item>
+        <item name="colorOutlineVariant">#303030</item>
+        <!-- EggPlay: navigation bar blends with the app background -->
+        <item name="android:navigationBarColor">@color/dark_background_color</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
 
         <item name="separator_color">@color/dark_separator_color</item>
         <item name="contrast_background_color">@color/dark_contrast_background_color</item>
@@ -80,6 +114,8 @@
         <item name="android:windowBackground">@color/black_background_color</item>
         <item name="windowBackground">@color/black_background_color</item>
         <item name="android:statusBarColor">@color/black_background_color</item>
+        <item name="colorSurface">@color/black_background_color</item>
+        <item name="android:navigationBarColor">@color/black_background_color</item>
 
         <item name="separator_color">@color/black_separator_color</item>
         <item name="contrast_background_color">@color/black_contrast_background_color</item>
@@ -96,7 +132,7 @@
     <style name="LightDialogTheme" parent="Theme.AppCompat.DayNight.Dialog">
         <item name="colorPrimary">@color/light_youtube_primary_color</item>
         <item name="colorPrimaryDark">@color/light_youtube_primary_color</item>
-        <item name="colorAccent">@color/light_youtube_accent_color</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
         <item name="android:windowBackground">@color/light_dialog_background_color</item>
         <item name="windowBackground">@color/light_dialog_background_color</item>
     </style>
@@ -104,7 +140,7 @@
     <style name="DarkDialogTheme" parent="Theme.AppCompat.DayNight.Dialog">
         <item name="colorPrimary">@color/dark_youtube_primary_color</item>
         <item name="colorPrimaryDark">@color/dark_youtube_primary_color</item>
-        <item name="colorAccent">@color/dark_youtube_accent_color</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
         <item name="android:windowBackground">@color/dark_dialog_background_color</item>
         <item name="windowBackground">@color/dark_dialog_background_color</item>
     </style>
@@ -112,7 +148,7 @@
     <style name="LightDialogMinWidthTheme" parent="Theme.AppCompat.DayNight.Dialog.MinWidth">
         <item name="colorPrimary">@color/light_youtube_primary_color</item>
         <item name="colorPrimaryDark">@color/light_youtube_primary_color</item>
-        <item name="colorAccent">@color/light_youtube_accent_color</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
         <item name="android:windowBackground">@color/light_dialog_background_color</item>
         <item name="windowBackground">@color/light_dialog_background_color</item>
     </style>
@@ -120,22 +156,22 @@
     <style name="DarkDialogMinWidthTheme" parent="Theme.AppCompat.DayNight.Dialog.MinWidth">
         <item name="colorPrimary">@color/dark_youtube_primary_color</item>
         <item name="colorPrimaryDark">@color/dark_youtube_primary_color</item>
-        <item name="colorAccent">@color/dark_youtube_accent_color</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
         <item name="android:windowBackground">@color/dark_dialog_background_color</item>
         <item name="windowBackground">@color/dark_dialog_background_color</item>
     </style>
 
     <!-- Settings -->
     <style name="LightSettingsTheme" parent="LightTheme">
-        <item name="colorAccent">@color/light_settings_accent_color</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
     </style>
 
     <style name="DarkSettingsTheme" parent="DarkTheme">
-        <item name="colorAccent">@color/dark_settings_accent_color</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
     </style>
 
     <style name="BlackSettingsTheme" parent="BlackTheme">
-        <item name="colorAccent">@color/black_settings_accent_color</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
     </style>
 
     <!-- Router Activity -->

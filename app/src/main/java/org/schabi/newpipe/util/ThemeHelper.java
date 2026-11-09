@@ -37,6 +37,8 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
+import com.google.android.material.color.DynamicColors;
+
 import org.schabi.newpipe.R;
 import org.schabi.newpipe.extractor.NewPipe;
 import org.schabi.newpipe.extractor.StreamingService;
@@ -73,6 +75,24 @@ public final class ThemeHelper {
      */
     public static void setTheme(final Context context, final int serviceId) {
         context.setTheme(getThemeForService(context, serviceId));
+        applyDynamicColors(context);
+    }
+
+    /**
+     * Material You: colors follow the wallpaper on Android 12+ (if enabled in the settings).
+     * Must be called after the theme was set. Does nothing on older versions of Android.
+     *
+     * @param context the context (only an {@link Activity} is recolored)
+     */
+    public static void applyDynamicColors(final Context context) {
+        if (context instanceof Activity && isDynamicColorsEnabled(context)) {
+            DynamicColors.applyToActivityIfAvailable((Activity) context);
+        }
+    }
+
+    public static boolean isDynamicColorsEnabled(final Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(context.getString(R.string.dynamic_colors_key), true);
     }
 
     /**
