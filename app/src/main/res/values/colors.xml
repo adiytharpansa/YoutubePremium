@@ -4,6 +4,9 @@
     <color name="contrastColor">@color/black</color>
     <color name="defaultIconTint">@color/black</color>
 
+    <color name="eggplay_accent">#FF5E0A</color>
+    <color name="eggplay_accent_light">#FF8A50</color>
+
     <color name="ic_launcher_background">#FF5E1A</color>
 
     <color name="placeholder_background">#999999</color>

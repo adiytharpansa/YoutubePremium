@@ -9,12 +9,6 @@
         android:title="@string/notification_channel_name"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_profile"
-        android:icon="@drawable/ic_eg_you"
-        android:orderInCategory="2"
-        android:title="@string/settings"
-        app:showAsAction="always" />
-    <item
         android:id="@+id/action_search"
         android:icon="@drawable/ic_eg_search"
         android:orderInCategory="1"

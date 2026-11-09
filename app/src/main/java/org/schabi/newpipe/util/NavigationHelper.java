@@ -571,6 +571,18 @@ public final class NavigationHelper {
                 .commit();
     }
 
+    /**
+     * EggPlay: opens the "You" screen (stats + library + settings).
+     *
+     * @param fragmentManager the fragment manager to use
+     */
+    public static void openYouFragment(final FragmentManager fragmentManager) {
+        defaultTransaction(fragmentManager)
+                .replace(R.id.fragment_holder, new org.schabi.newpipe.fragments.YouFragment())
+                .addToBackStack(null)
+                .commit();
+    }
+
     public static void openBookmarksFragment(final FragmentManager fragmentManager) {
         defaultTransaction(fragmentManager)
                 .replace(R.id.fragment_holder, new BookmarkFragment())
