@@ -9,8 +9,8 @@ const val NEWPIPE_VERSION_SDK_MIN = 23
 const val NEWPIPE_VERSION_SDK_TARGET = 35
 
 // EggPlay release versioning (code base: NewPipe 0.29.2, upstream code 1016)
-const val NEWPIPE_VERSION_CODE = 120
-const val NEWPIPE_VERSION_NAME = "1.2.0"
+const val NEWPIPE_VERSION_CODE = 130
+const val NEWPIPE_VERSION_NAME = "1.3.0"
 
 const val NEWPIPE_APPLICATION_ID_OLD = "org.schabi.newpipe"
 const val NEWPIPE_APPLICATION_ID_NEW = "net.newpipe.app"
