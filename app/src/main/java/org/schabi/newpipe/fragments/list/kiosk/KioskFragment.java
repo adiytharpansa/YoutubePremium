@@ -5,6 +5,7 @@
 
 package org.schabi.newpipe.fragments.list.kiosk;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,6 +24,7 @@ import org.schabi.newpipe.error.ErrorInfo;
 import org.schabi.newpipe.error.UserAction;
 import org.schabi.newpipe.extractor.ListExtractor;
 import org.schabi.newpipe.extractor.NewPipe;
+import org.schabi.newpipe.extractor.Page;
 import org.schabi.newpipe.extractor.ServiceList;
 import org.schabi.newpipe.extractor.StreamingService;
 import org.schabi.newpipe.extractor.exceptions.ExtractionException;
@@ -35,6 +37,10 @@ import org.schabi.newpipe.fragments.list.BaseListInfoFragment;
 import org.schabi.newpipe.util.ExtractorHelper;
 import org.schabi.newpipe.util.KioskTranslator;
 import org.schabi.newpipe.util.Localization;
+
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import io.reactivex.rxjava3.core.Single;
 
@@ -51,6 +57,10 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
         return kioskId;
     }
     String kioskTranslatedName;
+
+    /** EggPlay: infos already filtered / ranked (they can be served again from the cache). */
+    private static final Map<KioskInfo, Boolean> PROCESSED_INFOS =
+            new WeakHashMap<>();
     @State
     ContentCountry contentCountry;
 
@@ -132,15 +142,64 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
     // Load and handle
     //////////////////////////////////////////////////////////////////////////*/
 
+    /** EggPlay: the Live kiosk keeps live streams, every other kiosk (Home) hides them. */
+    private boolean isLiveKiosk() {
+        return "live".equals(kioskId);
+    }
+
+    /** EggPlay: personalised ranking is applied only to the Home (default kiosk) tab. */
+    private boolean isHomeKiosk() {
+        return this instanceof DefaultKioskFragment;
+    }
+
     @Override
     public Single<KioskInfo> loadResult(final boolean forceReload) {
         contentCountry = Localization.getPreferredContentCountry(requireContext());
-        return ExtractorHelper.getKioskInfo(serviceId, url, forceReload);
+        final Context appContext = requireContext().getApplicationContext();
+        return ExtractorHelper.getKioskInfo(serviceId, url, forceReload).map(info -> {
+            if (!isLiveKiosk()) {
+                synchronized (PROCESSED_INFOS) {
+                    // the info may come from the cache: process each instance only once
+                    if (PROCESSED_INFOS.put(info, Boolean.TRUE) == null) {
+                        List<StreamInfoItem> items =
+                                HomeRecommender.withoutLive(info.getRelatedItems());
+                        if (isHomeKiosk()) {
+                            items = HomeRecommender.rank(appContext, items, true);
+                        }
+                        info.setRelatedItems(items);
+                    }
+                }
+            }
+            return info;
+        });
     }
 
     @Override
     public Single<ListExtractor.InfoItemsPage<StreamInfoItem>> loadMoreItemsLogic() {
-        return ExtractorHelper.getMoreKioskItems(serviceId, url, currentNextPage);
+        final Context appContext = requireContext().getApplicationContext();
+        return loadMoreFiltered(currentNextPage, appContext, 0);
+    }
+
+    /**
+     * Loads the next page and drops live streams. If a whole page was live streams, the
+     * following page is fetched right away (max 3 hops) so infinite scroll does not stall.
+     */
+    private Single<ListExtractor.InfoItemsPage<StreamInfoItem>> loadMoreFiltered(
+            final Page page, final Context appContext, final int hops) {
+        return ExtractorHelper.getMoreKioskItems(serviceId, url, page).flatMap(result -> {
+            if (isLiveKiosk()) {
+                return Single.just(result);
+            }
+            List<StreamInfoItem> items = HomeRecommender.withoutLive(result.getItems());
+            if (items.isEmpty() && Page.isValid(result.getNextPage()) && hops < 3) {
+                return loadMoreFiltered(result.getNextPage(), appContext, hops + 1);
+            }
+            if (isHomeKiosk()) {
+                items = HomeRecommender.rank(appContext, items, false);
+            }
+            return Single.just(new ListExtractor.InfoItemsPage<>(
+                    items, result.getNextPage(), result.getErrors()));
+        });
     }
 
     /*//////////////////////////////////////////////////////////////////////////

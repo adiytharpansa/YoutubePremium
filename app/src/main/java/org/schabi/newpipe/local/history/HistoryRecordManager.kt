@@ -123,6 +123,8 @@ class HistoryRecordManager(context: Context) {
 
         val currentTime = OffsetDateTime.now(ZoneOffset.UTC)
         return rxMaybe(Dispatchers.IO) {
+            // EggPlay: let the Home recommender pick up this view on the next load
+            org.schabi.newpipe.fragments.list.kiosk.HomeRecommender.invalidateProfile()
             database.withWriteTransaction {
                 val streamId = streamTable.upsert(StreamEntity(info))
                 val latestEntry = streamHistoryTable.getLatestEntry(streamId)

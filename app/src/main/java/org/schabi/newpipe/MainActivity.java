@@ -20,6 +20,7 @@
 
 package org.schabi.newpipe;
 
+import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -32,12 +33,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -57,6 +60,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -189,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
             ErrorUtil.showUiErrorSnackbar(this, "Setting up drawer", e);
         }
         setupBottomNavigation();
+        setupHideBarsOnScroll();
         if (DeviceUtils.isTv(this)) {
             FocusOverlayView.setupFocusObserver(this);
         }
@@ -415,19 +420,147 @@ public class MainActivity extends AppCompatActivity {
         final boolean show = selectedId != 0 && !playerCoveringBottom;
         bottomNav.setVisibility(show ? View.VISIBLE : View.GONE);
 
-        final ViewGroup.MarginLayoutParams holderParams =
-                (ViewGroup.MarginLayoutParams) mainBinding.fragmentHolder.getLayoutParams();
-        final int targetMargin = show ? getResources()
-                .getDimensionPixelSize(R.dimen.bottom_nav_height) : 0;
-        if (holderParams.bottomMargin != targetMargin) {
-            holderParams.bottomMargin = targetMargin;
-            mainBinding.fragmentHolder.setLayoutParams(holderParams);
-        }
+        // EggPlay: always bring the bars back when the destination / player state changes
+        resetBars();
 
         if (show && bottomNav.getSelectedItemId() != selectedId) {
             updatingBottomNavSelection = true;
             bottomNav.setSelectedItemId(selectedId);
             updatingBottomNavSelection = false;
+        }
+    }
+
+    // endregion
+
+    // region EggPlay: hide top/bottom bars while scrolling down (YouTube-style)
+
+    private static final long BARS_ANIM_MS = 220;
+    private static final int BARS_SCROLL_THRESHOLD_DP = 24;
+
+    /** 0 = bars fully visible, 1 = bars fully hidden. */
+    private float barsHidden = 0f;
+    private int barsScrollAccum = 0;
+    private float barsTarget = 0f;
+    private ValueAnimator barsAnimator;
+
+    private final RecyclerView.OnScrollListener barsScrollListener =
+            new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(@NonNull final RecyclerView rv, final int dx,
+                                       final int dy) {
+                    if (dy == 0 || !canAutoHideBars()) {
+                        return;
+                    }
+                    if (!rv.canScrollVertically(-1)) {
+                        // back at the top of the list: always show the bars
+                        barsScrollAccum = 0;
+                        animateBars(false);
+                        return;
+                    }
+                    if (rv.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
+                        return; // programmatic jump (e.g. restoring position), ignore
+                    }
+                    if ((dy > 0) != (barsScrollAccum > 0)) {
+                        barsScrollAccum = 0; // direction changed
+                    }
+                    barsScrollAccum += dy;
+                    final int threshold = (int) TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP, BARS_SCROLL_THRESHOLD_DP,
+                            getResources().getDisplayMetrics());
+                    if (barsScrollAccum > threshold) {
+                        animateBars(true);
+                    } else if (barsScrollAccum < -threshold) {
+                        animateBars(false);
+                    }
+                }
+            };
+
+    private void setupHideBarsOnScroll() {
+        getSupportFragmentManager().registerFragmentLifecycleCallbacks(
+                new FragmentManager.FragmentLifecycleCallbacks() {
+                    @Override
+                    public void onFragmentViewCreated(@NonNull final FragmentManager fm,
+                                                      @NonNull final Fragment f,
+                                                      @NonNull final View v,
+                                                      @Nullable final Bundle savedInstanceState) {
+                        attachBarsScrollListener(v);
+                    }
+                }, true);
+    }
+
+    private void attachBarsScrollListener(final View view) {
+        if (view instanceof RecyclerView) {
+            final RecyclerView rv = (RecyclerView) view;
+            rv.removeOnScrollListener(barsScrollListener);
+            rv.addOnScrollListener(barsScrollListener);
+        } else if (view instanceof ViewGroup) {
+            final ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                attachBarsScrollListener(group.getChildAt(i));
+            }
+        }
+    }
+
+    /** Only on top-level destinations (bottom nav visible), not while searching. */
+    private boolean canAutoHideBars() {
+        return mainBinding.bottomNavigation.getVisibility() == View.VISIBLE
+                && toolbarLayoutBinding.toolbarSearchContainer.getRoot()
+                .getVisibility() != View.VISIBLE
+                && !mainBinding.getRoot().isDrawerOpen(drawerLayoutBinding.navigation);
+    }
+
+    private void animateBars(final boolean hide) {
+        final float target = hide ? 1f : 0f;
+        if (barsTarget == target) {
+            return;
+        }
+        barsTarget = target;
+        if (barsAnimator != null) {
+            barsAnimator.cancel();
+        }
+        barsAnimator = ValueAnimator.ofFloat(barsHidden, target);
+        barsAnimator.setDuration(BARS_ANIM_MS);
+        barsAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        barsAnimator.addUpdateListener(a -> applyBars((float) a.getAnimatedValue()));
+        barsAnimator.start();
+    }
+
+    private void resetBars() {
+        if (barsAnimator != null) {
+            barsAnimator.cancel();
+        }
+        barsScrollAccum = 0;
+        barsTarget = 0f;
+        applyBars(0f);
+    }
+
+    private int toolbarHeightPx() {
+        final TypedValue tv = new TypedValue();
+        getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true);
+        return TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+    }
+
+    /**
+     * Slides the toolbar up and the bottom nav down by {@code hidden} (0..1) and grows the
+     * fragment holder into the freed space so the content follows without leaving gaps.
+     */
+    private void applyBars(final float hidden) {
+        barsHidden = hidden;
+        final int toolbarH = toolbarHeightPx();
+        final int navH = getResources().getDimensionPixelSize(R.dimen.bottom_nav_height);
+        final boolean navShown = mainBinding.bottomNavigation.getVisibility() == View.VISIBLE;
+
+        toolbarLayoutBinding.getRoot().setTranslationY(-hidden * toolbarH);
+        mainBinding.bottomNavigation.setTranslationY(hidden * navH);
+
+        final ViewGroup.MarginLayoutParams lp =
+                (ViewGroup.MarginLayoutParams) mainBinding.fragmentHolder.getLayoutParams();
+        final int top = Math.round(toolbarH * (1f - hidden));
+        final int bottom = navShown ? Math.round(navH * (1f - hidden)) : 0;
+        if (lp.topMargin != top || lp.bottomMargin != bottom) {
+            lp.topMargin = top;
+            lp.bottomMargin = bottom;
+            mainBinding.fragmentHolder.setLayoutParams(lp);
         }
     }
 
