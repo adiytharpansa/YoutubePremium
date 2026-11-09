@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EggPlay: pill YouTube-style untuk tombol aksi di halaman video. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/separator_color">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="18dp" />
+            <solid android:color="@color/chip_bg" />
+        </shape>
+    </item>
+</ripple>
