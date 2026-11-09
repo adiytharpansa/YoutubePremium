@@ -284,7 +284,8 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
 
         @ColorInt final int iconColor = ThemeHelper.resolveColorFromAttr(requireContext(),
                 android.R.attr.colorAccent);
-        tabLayout.setTabRippleColor(ColorStateList.valueOf(iconColor).withAlpha(32));
+        // EggPlay: chips have no square ripple
+        tabLayout.setTabRippleColor(ColorStateList.valueOf(Color.TRANSPARENT));
         tabLayout.setTabIconTint(ColorStateList.valueOf(iconColor));
         tabLayout.setSelectedTabIndicatorColor(Color.parseColor("#FC6401"));
     }

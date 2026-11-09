@@ -1,106 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  EggPlay: YouTube-style video card.
+  Full-bleed 16:9 thumbnail, channel avatar, two-line title, a single
+  "channel • views • date" line and an overflow button.
+
+  The view ids are shared with list_stream_item.xml (they are bound by
+  StreamInfoItemHolder, LocalStatisticStreamItemHolder and the feed's
+  StreamItem), so do not rename them. itemAdditionalDetails stays in the
+  layout but is hidden: its text is merged into itemUploaderView by
+  CardMetaLine.
+  SPDX-License-Identifier: GPL-3.0-or-later
+  -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/itemRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="@dimen/channel_item_grid_padding"
-    android:paddingBottom="@dimen/channel_item_grid_padding"
     android:background="?attr/selectableItemBackground"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:paddingBottom="@dimen/card_item_spacing">
 
     <ImageView
         android:id="@+id/itemThumbnailView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:background="@drawable/rounded_thumbnail_background"
-        android:clipToOutline="true"
+        android:contentDescription="@null"
         android:scaleType="centerCrop"
         android:src="@drawable/placeholder_thumbnail_video"
-        app:layout_constraintBottom_toTopOf="@+id/itemProgressView"
         app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Watch progress, drawn over the bottom edge of the thumbnail -->
+    <org.schabi.newpipe.views.AnimatedProgressBar
+        android:id="@+id/itemProgressView"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="3dp"
+        android:progressDrawable="?progress_horizontal_drawable"
+        app:layout_constraintBottom_toBottomOf="@id/itemThumbnailView"
+        app:layout_constraintEnd_toEndOf="@id/itemThumbnailView"
+        app:layout_constraintStart_toStartOf="@id/itemThumbnailView" />
+
     <org.schabi.newpipe.views.NewPipeTextView
         android:id="@+id/itemDurationView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/video_item_search_duration_margin"
-        android:layout_marginBottom="@dimen/video_item_search_duration_margin"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="10dp"
         android:background="@drawable/duration_badge_background"
-        android:paddingHorizontal="@dimen/video_item_search_duration_horizontal_padding"
-        android:paddingVertical="@dimen/video_item_search_duration_vertical_padding"
+        android:fontFamily="sans-serif-medium"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="2dp"
         android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@color/duration_text_color"
-        android:textSize="@dimen/video_item_search_duration_text_size"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@id/itemThumbnailView"
-        app:layout_constraintRight_toRightOf="@id/itemThumbnailView"
+        app:layout_constraintEnd_toEndOf="@id/itemThumbnailView"
         tools:text="1:09:10" />
+
+    <ImageView
+        android:id="@+id/itemUploaderAvatarView"
+        android:layout_width="@dimen/card_avatar_size"
+        android:layout_height="@dimen/card_avatar_size"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/avatar_circle_background"
+        android:clipToOutline="true"
+        android:contentDescription="@null"
+        android:outlineProvider="background"
+        android:scaleType="centerCrop"
+        android:src="@drawable/placeholder_person"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/itemThumbnailView" />
+
+    <ImageButton
+        android:id="@+id/itemMoreButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="4dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/more_options"
+        android:src="@drawable/ic_eg_more"
+        android:tint="?android:attr/textColorSecondary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/itemThumbnailView" />
 
     <org.schabi.newpipe.views.NewPipeTextView
         android:id="@+id/itemVideoTitleView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_small"
-        android:layout_marginEnd="@dimen/margin_small"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
         android:ellipsize="end"
-        android:maxLines="2"
-        android:layout_marginTop="@dimen/margin_small"
         android:fontFamily="sans-serif-medium"
         android:lineSpacingExtra="2dp"
+        android:maxLines="2"
         android:textAppearance="?textAppearanceListItem"
         android:textSize="15sp"
-        app:layout_constraintEnd_toEndOf="@id/itemThumbnailView"
-        app:layout_constraintStart_toStartOf="@id/itemThumbnailView"
+        app:layout_constraintEnd_toStartOf="@id/itemMoreButton"
+        app:layout_constraintStart_toEndOf="@id/itemUploaderAvatarView"
         app:layout_constraintTop_toBottomOf="@id/itemThumbnailView"
-        tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc tristique vitae sem vitae blanditLorem ipsumLorem ipsumLorem ipsumLorem ipsumLorem ipsumLorem ipsumLorem ipsum" />
+        tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc tristique vitae sem vitae blandit" />
 
     <org.schabi.newpipe.views.NewPipeTextView
         android:id="@+id/itemUploaderView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_micro"
-        android:layout_marginEnd="@dimen/margin_small"
+        android:layout_marginTop="3dp"
         android:ellipsize="end"
-        android:lines="1"
         android:includeFontPadding="false"
+        android:maxLines="1"
         android:textAppearance="?android:textAppearanceSmall"
+        android:textColor="?android:attr/textColorSecondary"
         android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@id/itemAdditionalDetails"
+        app:layout_constraintEnd_toEndOf="@id/itemVideoTitleView"
         app:layout_constraintStart_toStartOf="@id/itemVideoTitleView"
-        app:layout_constraintTop_toBottomOf="@+id/itemVideoTitleView"
-        tools:text="Uploader" />
+        app:layout_constraintTop_toBottomOf="@id/itemVideoTitleView"
+        tools:text="Uploader • 10M views • 2 years ago" />
 
+    <!-- Hidden: merged into itemUploaderView, kept so the shared binders still find it -->
     <org.schabi.newpipe.views.NewPipeTextView
         android:id="@+id/itemAdditionalDetails"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:lines="1"
-        android:includeFontPadding="false"
-        android:textAppearance="?android:textAppearanceSmall"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@id/itemUploaderView"
-        app:layout_constraintEnd_toEndOf="@+id/itemVideoTitleView"
-        app:layout_constraintStart_toEndOf="@id/itemUploaderView"
-        app:layout_constraintTop_toTopOf="@id/itemUploaderView"
-        tools:text="2 years ago • 10M views" />
-
-    <org.schabi.newpipe.views.AnimatedProgressBar
-        android:id="@+id/itemProgressView"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-        android:layout_width="0dp"
-        android:layout_height="4dp"
-        android:progressDrawable="?progress_horizontal_drawable"
-        app:layout_constraintBottom_toBottomOf="@id/itemThumbnailView"
-        app:layout_constraintEnd_toEndOf="@+id/itemThumbnailView"
-        app:layout_constraintStart_toStartOf="@+id/itemThumbnailView" />
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/itemUploaderView"
+        app:layout_constraintTop_toBottomOf="@id/itemUploaderView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

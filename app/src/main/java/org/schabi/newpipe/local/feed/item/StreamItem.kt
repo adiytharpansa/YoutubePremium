@@ -19,6 +19,7 @@ import org.schabi.newpipe.extractor.stream.StreamType.LIVE_STREAM
 import org.schabi.newpipe.extractor.stream.StreamType.POST_LIVE_AUDIO_STREAM
 import org.schabi.newpipe.extractor.stream.StreamType.POST_LIVE_STREAM
 import org.schabi.newpipe.extractor.stream.StreamType.VIDEO_STREAM
+import org.schabi.newpipe.util.CardMetaLine
 import org.schabi.newpipe.util.Localization
 import org.schabi.newpipe.util.StreamTypeUtil
 import org.schabi.newpipe.util.image.CoilHelper
@@ -55,10 +56,7 @@ data class StreamItem(
 
     override fun bind(viewBinding: ListStreamItemBinding, position: Int, payloads: MutableList<Any>) {
         if (payloads.contains(UPDATE_RELATIVE_TIME)) {
-            if (itemVersion != ItemVersion.MINI) {
-                viewBinding.itemAdditionalDetails.text =
-                    getStreamInfoDetailLine(viewBinding.itemAdditionalDetails.context)
-            }
+            bindDetails(viewBinding)
             return
         }
 
@@ -71,7 +69,8 @@ data class StreamItem(
 
         if (stream.duration > 0) {
             viewBinding.itemDurationView.text = Localization.getDurationString(stream.duration)
-            viewBinding.itemDurationView.setBackgroundColor(
+            CardMetaLine.setBadgeColor(
+                viewBinding.itemDurationView,
                 ContextCompat.getColor(
                     viewBinding.itemDurationView.context,
                     R.color.duration_background_color
@@ -88,7 +87,8 @@ data class StreamItem(
             }
         } else if (StreamTypeUtil.isLiveStream(stream.streamType)) {
             viewBinding.itemDurationView.setText(R.string.duration_live)
-            viewBinding.itemDurationView.setBackgroundColor(
+            CardMetaLine.setBadgeColor(
+                viewBinding.itemDurationView,
                 ContextCompat.getColor(
                     viewBinding.itemDurationView.context,
                     R.color.live_duration_background_color
@@ -103,12 +103,27 @@ data class StreamItem(
 
         CoilHelper.loadThumbnail(viewBinding.itemThumbnailView, stream.thumbnailUrl)
 
-        if (itemVersion != ItemVersion.MINI) {
-            viewBinding.itemAdditionalDetails.text =
-                getStreamInfoDetailLine(viewBinding.itemAdditionalDetails.context)
-        }
+        bindDetails(viewBinding)
 
         execBindEnd?.accept(viewBinding)
+    }
+
+    /**
+     * Fills the "views • date" line. The EggPlay card layout shows it on one line together with
+     * the uploader, so there it is merged into the uploader view instead.
+     */
+    private fun bindDetails(viewBinding: ListStreamItemBinding) {
+        if (itemVersion == ItemVersion.MINI) return
+
+        viewBinding.itemAdditionalDetails.text =
+            getStreamInfoDetailLine(viewBinding.itemAdditionalDetails.context)
+        if (itemVersion == ItemVersion.CARD) {
+            CardMetaLine.merge(
+                viewBinding.itemUploaderView,
+                viewBinding.itemAdditionalDetails,
+                stream.uploader
+            )
+        }
     }
 
     override fun isLongClickable() = when (stream.streamType) {

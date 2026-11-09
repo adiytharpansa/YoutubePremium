@@ -14,6 +14,7 @@ import org.schabi.newpipe.database.stream.StreamStatisticsEntry;
 import org.schabi.newpipe.ktx.ViewUtils;
 import org.schabi.newpipe.local.LocalItemBuilder;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
+import org.schabi.newpipe.util.CardMetaLine;
 import org.schabi.newpipe.util.DependentPreferenceHelper;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.ServiceHelper;
@@ -94,8 +95,9 @@ public class LocalStatisticStreamItemHolder extends LocalItemHolder {
         if (item.getStreamEntity().getDuration() > 0) {
             itemDurationView.
                     setText(Localization.getDurationString(item.getStreamEntity().getDuration()));
-            itemDurationView.setBackgroundColor(ContextCompat.getColor(itemBuilder.getContext(),
-                    R.color.duration_background_color));
+            CardMetaLine.setBadgeColor(itemDurationView,
+                    ContextCompat.getColor(itemBuilder.getContext(),
+                            R.color.duration_background_color));
             itemDurationView.setVisibility(View.VISIBLE);
 
             if (DependentPreferenceHelper.getPositionsInListsEnabled(itemProgressView.getContext())

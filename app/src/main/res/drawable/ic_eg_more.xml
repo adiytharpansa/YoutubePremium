@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EggPlay icon set: rounded 24dp line icons. SPDX-License-Identifier: GPL-3.0-or-later -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:tint="@color/defaultIconTint"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M10.2,5a1.8,1.8 0 1,0 3.6,0a1.8,1.8 0 1,0 -3.6,0z"
+        android:fillColor="#FF000000" />
+    <path
+        android:pathData="M10.2,12a1.8,1.8 0 1,0 3.6,0a1.8,1.8 0 1,0 -3.6,0z"
+        android:fillColor="#FF000000" />
+    <path
+        android:pathData="M10.2,19a1.8,1.8 0 1,0 3.6,0a1.8,1.8 0 1,0 -3.6,0z"
+        android:fillColor="#FF000000" />
+</vector>

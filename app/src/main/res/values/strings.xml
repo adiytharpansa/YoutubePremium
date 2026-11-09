@@ -35,9 +35,9 @@
     <string name="show_info">Show info</string>
     <string name="tab_subscriptions">Subscriptions</string>
     <string name="bottom_nav_home">Home</string>
-    <string name="bottom_nav_feed">Feed</string>
-    <string name="bottom_nav_live">Live</string>
-    <string name="bottom_nav_create">Create</string>
+    <string name="bottom_nav_feed">@string/fragment_feed_title</string>
+    <string name="bottom_nav_live">@string/duration_live</string>
+    <string name="bottom_nav_downloads">@string/downloads</string>
     <string name="bottom_nav_you">You</string>
     <string name="tab_bookmarks">Bookmarked Playlists</string>
     <string name="tab_bookmarks_short">Playlists</string>
