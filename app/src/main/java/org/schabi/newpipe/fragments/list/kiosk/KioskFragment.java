@@ -42,7 +42,11 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
     @State
     String kioskId = "";
 
-    /** EggPlay: lets the bottom navigation know which kiosk is shown. */
+    /**
+     * EggPlay: lets the bottom navigation know which kiosk is shown.
+     *
+     * @return the id of the kiosk shown by this fragment
+     */
     public String getKioskId() {
         return kioskId;
     }
