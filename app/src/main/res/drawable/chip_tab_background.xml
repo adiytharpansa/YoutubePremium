@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EggPlay: pill background of a home tab (YouTube-style filter chip). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <inset android:insetLeft="4dp" android:insetRight="4dp" android:insetTop="8dp" android:insetBottom="8dp">
+            <shape android:shape="rectangle">
+                <corners android:radius="8dp" />
+                <solid android:color="@color/chip_bg_selected" />
+            </shape>
+        </inset>
+    </item>
+    <item>
+        <inset android:insetLeft="4dp" android:insetRight="4dp" android:insetTop="8dp" android:insetBottom="8dp">
+            <shape android:shape="rectangle">
+                <corners android:radius="8dp" />
+                <solid android:color="@color/chip_bg" />
+            </shape>
+        </inset>
+    </item>
+</selector>

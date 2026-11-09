@@ -87,6 +87,9 @@
     <dimen name="channel_avatar_size">70dp</dimen>
     <!-- EggPlay: height reserved at the bottom of the screen for the bottom navigation -->
     <dimen name="bottom_nav_height">56dp</dimen>
+    <!-- EggPlay: YouTube-style video card -->
+    <dimen name="card_avatar_size">36dp</dimen>
+    <dimen name="card_item_spacing">16dp</dimen>
     <dimen name="sub_channel_avatar_size">35dp</dimen>
     <dimen name="mini_player_height">60dp</dimen>
     <!-- Paddings & Margins -->

@@ -14,6 +14,7 @@ import org.schabi.newpipe.extractor.stream.StreamInfoItem;
 import org.schabi.newpipe.info_list.InfoItemBuilder;
 import org.schabi.newpipe.ktx.ViewUtils;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
+import org.schabi.newpipe.util.CardMetaLine;
 import org.schabi.newpipe.util.DependentPreferenceHelper;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.StreamTypeUtil;
@@ -57,8 +58,9 @@ public class StreamMiniInfoItemHolder extends InfoItemHolder {
 
         if (item.getDuration() > 0) {
             itemDurationView.setText(Localization.getDurationString(item.getDuration()));
-            itemDurationView.setBackgroundColor(ContextCompat.getColor(itemBuilder.getContext(),
-                    R.color.duration_background_color));
+            CardMetaLine.setBadgeColor(itemDurationView,
+                    ContextCompat.getColor(itemBuilder.getContext(),
+                            R.color.duration_background_color));
             itemDurationView.setVisibility(View.VISIBLE);
 
             StreamStateEntity state2 = null;
@@ -77,8 +79,9 @@ public class StreamMiniInfoItemHolder extends InfoItemHolder {
             }
         } else if (StreamTypeUtil.isLiveStream(item.getStreamType())) {
             itemDurationView.setText(R.string.duration_live);
-            itemDurationView.setBackgroundColor(ContextCompat.getColor(itemBuilder.getContext(),
-                    R.color.live_duration_background_color));
+            CardMetaLine.setBadgeColor(itemDurationView,
+                    ContextCompat.getColor(itemBuilder.getContext(),
+                            R.color.live_duration_background_color));
             itemDurationView.setVisibility(View.VISIBLE);
             itemProgressView.setVisibility(View.GONE);
         } else {

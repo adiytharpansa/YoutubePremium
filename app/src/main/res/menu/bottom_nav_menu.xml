@@ -6,18 +6,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/bottom_nav_home"
-        android:icon="@drawable/ic_home"
+        android:icon="@drawable/ic_nav_home"
         android:title="@string/bottom_nav_home" />
     <item
         android:id="@+id/bottom_nav_live"
-        android:icon="@drawable/ic_live_tv"
+        android:icon="@drawable/ic_nav_live"
         android:title="@string/bottom_nav_live" />
     <item
-        android:id="@+id/bottom_nav_create"
-        android:icon="@drawable/ic_add_circle_outline"
-        android:title="@string/bottom_nav_create" />
+        android:id="@+id/bottom_nav_downloads"
+        android:icon="@drawable/ic_nav_downloads"
+        android:title="@string/bottom_nav_downloads" />
     <item
         android:id="@+id/bottom_nav_you"
-        android:icon="@drawable/ic_person"
+        android:icon="@drawable/ic_nav_you"
         android:title="@string/bottom_nav_you" />
 </menu>

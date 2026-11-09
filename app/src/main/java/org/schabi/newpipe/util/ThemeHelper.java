@@ -372,14 +372,15 @@ public final class ThemeHelper {
         } else if (listMode.equals(context.getString(R.string.list_view_mode_card_key))) {
             result = ItemViewMode.CARD;
         } else {
-            // Auto mode - evaluate whether to use Grid based on screen real estate.
+            // Auto mode - EggPlay: YouTube-style full-width cards in portrait, and a grid
+            // whenever the screen is wider than it is tall (landscape or tablets).
             final Configuration configuration = context.getResources().getConfiguration();
             final boolean useGrid = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                    && configuration.isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_LARGE);
+                    || configuration.isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_LARGE);
             if (useGrid) {
                 result = ItemViewMode.GRID;
             } else {
-                result = ItemViewMode.LIST;
+                result = ItemViewMode.CARD;
             }
         }
         return result;

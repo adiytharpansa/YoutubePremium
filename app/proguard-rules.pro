@@ -57,3 +57,8 @@
 
 # See https://github.com/TeamNewPipe/NewPipe/issues/13508
 -keep class org.ocpsoft.prettytime.i18n.Resources* { *; }
+
+# EggPlay: StreamAvatars reads StreamInfoItem#getUploaderAvatars() reflectively
+-keepclassmembers class org.schabi.newpipe.extractor.stream.StreamInfoItem {
+    *** getUploaderAvatars();
+}

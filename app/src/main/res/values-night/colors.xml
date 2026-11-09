@@ -7,4 +7,9 @@
          used in the light theme) -->
     <color name="subscribed_background_color">#272727</color>
     <color name="subscribed_text_color">#f1f1f1</color>
+    <!-- EggPlay: YouTube-style filter chips (home tabs), dark -->
+    <color name="chip_bg">#272727</color>
+    <color name="chip_bg_selected">#FFFFFF</color>
+    <color name="chip_text">#FFFFFF</color>
+    <color name="chip_text_selected">#0F0F0F</color>
 </resources>

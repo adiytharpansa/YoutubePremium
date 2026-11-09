@@ -346,9 +346,11 @@ public class MainActivity extends AppCompatActivity {
                 } catch (final Exception e) {
                     ErrorUtil.showUiErrorSnackbar(this, "Opening live kiosk", e);
                 }
-            } else if (itemId == R.id.bottom_nav_create) {
-                // EggPlay: "+" manages/adds subscribed channels
-                NavigationHelper.openSubscriptionFragment(fm);
+            } else if (itemId == R.id.bottom_nav_downloads) {
+                // EggPlay: opens the downloads screen. It is a separate activity, so the
+                // tab is not marked as selected and the current page stays highlighted.
+                NavigationHelper.openDownloads(this);
+                return false;
             } else if (itemId == R.id.bottom_nav_you) {
                 // EggPlay: "You" is the library (playlists), like YouTube
                 NavigationHelper.openBookmarksFragment(fm);
@@ -396,7 +398,7 @@ public class MainActivity extends AppCompatActivity {
                 && "live".equals(((KioskFragment) current).getKioskId())) {
             selectedId = R.id.bottom_nav_live;
         } else if (current instanceof SubscriptionFragment) {
-            selectedId = R.id.bottom_nav_create;
+            selectedId = R.id.bottom_nav_home;
         } else if (current instanceof BookmarkFragment) {
             selectedId = R.id.bottom_nav_you;
         } else {

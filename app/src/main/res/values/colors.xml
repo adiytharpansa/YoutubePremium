@@ -53,7 +53,7 @@
     <color name="queue_background_color">@color/dark_queue_background_color</color>
     <color name="drawer_header_font_color">#F2FFFFFF</color>
     <color name="duration_background_color">#aa000000</color>
-    <color name="live_duration_background_color">#c8FC6401</color>
+    <color name="live_duration_background_color">#F2E62117</color>
     <color name="playlist_stream_count_background_color">#e6000000</color>
     <color name="duration_text_color">#EEFFFFFF</color>
     <color name="video_overlay_color">#64000000</color>
@@ -84,4 +84,9 @@
 
     <color name="black">#000</color>
 
+    <!-- EggPlay: YouTube-style filter chips (home tabs) -->
+    <color name="chip_bg">#F2F2F2</color>
+    <color name="chip_bg_selected">#0F0F0F</color>
+    <color name="chip_text">#0F0F0F</color>
+    <color name="chip_text_selected">#FFFFFF</color>
 </resources>
