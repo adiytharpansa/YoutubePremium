@@ -32,3 +32,8 @@ node_modules/
 !*.xcodeproj/project.xcworkspace/
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
+
+# EggPlay release signing secrets
+keystore.properties
+*.jks
+*.keystore

@@ -1526,6 +1526,5 @@
         <item>@string/image_quality_medium_key</item>
         <item>@string/image_quality_high_key</item>
     </string-array>
-    <string name="inline_preview_key" translatable="false">inline_preview_enabled</string>
-    <string name="inline_preview_muted_key" translatable="false">inline_preview_muted</string>
+    <string name="inline_preview_mode_key" translatable="false">inline_preview_mode</string>
 </resources>

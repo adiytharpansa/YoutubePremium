@@ -1,12 +1,16 @@
 package org.schabi.newpipe.preview;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.view.TextureView;
 import android.view.View;
@@ -36,12 +40,15 @@ import org.schabi.newpipe.R;
 import org.schabi.newpipe.extractor.stream.StreamInfo;
 import org.schabi.newpipe.extractor.stream.VideoStream;
 import org.schabi.newpipe.player.helper.PlayerDataSource;
+import org.schabi.newpipe.player.helper.PlayerHolder;
 import org.schabi.newpipe.player.resolver.VideoPlaybackResolver;
 import org.schabi.newpipe.util.ExtractorHelper;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -53,10 +60,11 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  *
  * <ul>
  *   <li>One shared ExoPlayer, moved from card to card; starts shortly after a card settles.</li>
- *   <li>Highest quality up to 1080p (the card is never larger), full length, looping.</li>
- *   <li>Stream info of every card on screen is prefetched so the next preview
- *   starts instantly.</li>
- *   <li>Muted by default with a mute button; if a stream fails it retries at lower quality.</li>
+ *   <li>Data friendly: Wi-Fi only by default, max 720p on unmetered / 480p on metered
+ *       networks, small buffer, disabled on Data Saver, battery saver and low-RAM devices.</li>
+ *   <li>Stream info of at most {@link #PREFETCH_MAX} nearby cards is prefetched.</li>
+ *   <li>Muted by default (unmute lasts for the current session only) and never starts
+ *       while the main player is open; on error it retries at lower quality.</li>
  * </ul>
  */
 public final class InlinePreviewController {
@@ -64,7 +72,18 @@ public final class InlinePreviewController {
     private static final int START_DELAY_MS = 220;
     private static final float MIN_VISIBLE = 0.6f;
     private static final float KEEP_VISIBLE = 0.35f;
-    private static final int MAX_HEIGHT = 1080;
+    private static final int MAX_HEIGHT_UNMETERED = 720;
+    private static final int MAX_HEIGHT_METERED = 480;
+    private static final int IDLE_TICK_MS = 900;
+    private static final long FAIL_TTL_MS = 5 * 60 * 1000L;
+    private static final float PREFETCH_MIN_VISIBLE = 0.3f;
+    static final int PREFETCH_MAX = 2;
+    static final String MODE_WIFI = "wifi";
+    static final String MODE_ALWAYS = "always";
+    static final String MODE_OFF = "off";
+
+    /** Unmuting only lasts until the process ends, so audio never surprises the user later. */
+    private static volatile boolean unmutedThisSession = false;
     private static final float HIDDEN_ALPHA = 0.01f;
 
     private final RecyclerView rv;
@@ -72,8 +91,9 @@ public final class InlinePreviewController {
     private final SharedPreferences prefs;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final CompositeDisposable prefetchDisposables = new CompositeDisposable();
-    private final Set<String> prefetched = new HashSet<>();
-    private final Set<String> failed = new HashSet<>();
+    private final Set<String> prefetched =
+            Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Map<String, Long> failed = new ConcurrentHashMap<>();
 
     @Nullable private ExoPlayer player;
     @Nullable private PlayerDataSource dataSource;
@@ -87,7 +107,7 @@ public final class InlinePreviewController {
     @Nullable private String pendingKey;
     @Nullable private View pendingHost;
     private long pendingSince;
-    private volatile int maxHeight = MAX_HEIGHT;
+    private volatile int maxHeight = MAX_HEIGHT_UNMETERED;
     private int retryLevel;
     private float videoAspect = 0f;
     private boolean resumed;
@@ -99,7 +119,19 @@ public final class InlinePreviewController {
                 return;
             }
             evaluate();
-            handler.postDelayed(this, TICK_MS);
+            handler.postDelayed(this, host != null || pendingKey != null ? TICK_MS : IDLE_TICK_MS);
+        }
+    };
+
+    private final RecyclerView.OnScrollListener scrollListener =
+            new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(@NonNull final RecyclerView recyclerView,
+                                         final int newState) {
+            if (newState == RecyclerView.SCROLL_STATE_IDLE && resumed) {
+                handler.removeCallbacks(tick);
+                handler.post(tick);
+            }
         }
     };
 
@@ -119,6 +151,8 @@ public final class InlinePreviewController {
         rv.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(@NonNull final View v) {
+                rv.removeOnScrollListener(scrollListener);
+                rv.addOnScrollListener(scrollListener);
                 lifecycleOwner = ViewTreeLifecycleOwner.get(rv);
                 if (lifecycleOwner != null) {
                     lifecycleOwner.getLifecycle().addObserver(lifecycleObserver);
@@ -129,6 +163,7 @@ public final class InlinePreviewController {
 
             @Override
             public void onViewDetachedFromWindow(@NonNull final View v) {
+                rv.removeOnScrollListener(scrollListener);
                 if (lifecycleOwner != null) {
                     lifecycleOwner.getLifecycle().removeObserver(lifecycleObserver);
                     lifecycleOwner = null;
@@ -137,6 +172,8 @@ public final class InlinePreviewController {
             }
         });
         if (rv.isAttachedToWindow()) {
+            rv.removeOnScrollListener(scrollListener);
+            rv.addOnScrollListener(scrollListener);
             lifecycleOwner = ViewTreeLifecycleOwner.get(rv);
             if (lifecycleOwner != null) {
                 lifecycleOwner.getLifecycle().addObserver(lifecycleObserver);
@@ -185,14 +222,86 @@ public final class InlinePreviewController {
         }
     }
 
+    private String mode() {
+        final String m = prefs.getString(appContext.getString(R.string.inline_preview_mode_key),
+                MODE_WIFI);
+        return m == null ? MODE_WIFI : m;
+    }
+
+    private boolean isMetered(@NonNull final ConnectivityManager cm) {
+        return cm.isActiveNetworkMetered();
+    }
+
+    private boolean isOnline(@NonNull final ConnectivityManager cm) {
+        final android.net.Network network = cm.getActiveNetwork();
+        if (network == null) {
+            return false;
+        }
+        final NetworkCapabilities caps = cm.getNetworkCapabilities(network);
+        return caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    }
+
     private boolean isEnabled() {
-        if (!prefs.getBoolean(appContext.getString(R.string.inline_preview_key), true)) {
+        final String mode = mode();
+        if (MODE_OFF.equals(mode)) {
+            return false;
+        }
+        // Never autoplay on low-RAM devices or in battery saver
+        final ActivityManager am = (ActivityManager) appContext
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        if (am != null && am.isLowRamDevice()) {
+            return false;
+        }
+        final PowerManager pm = (PowerManager) appContext.getSystemService(Context.POWER_SERVICE);
+        if (pm != null && pm.isPowerSaveMode()) {
+            return false;
+        }
+        // Do not compete with the main player (popup / background / fullscreen)
+        if (PlayerHolder.getInstance().isPlayerOpen()) {
             return false;
         }
         final ConnectivityManager cm = (ConnectivityManager)
                 appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return cm != null && cm.getActiveNetworkInfo() != null
-                && cm.getActiveNetworkInfo().isConnected();
+        if (cm == null || !isOnline(cm)) {
+            return false;
+        }
+        if (isMetered(cm)) {
+            if (MODE_WIFI.equals(mode)) {
+                return false;
+            }
+            // Respect system Data Saver even when the user chose "always"
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                    && cm.getRestrictBackgroundStatus()
+                    == ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private int baseMaxHeight() {
+        final ConnectivityManager cm = (ConnectivityManager)
+                appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm != null && isMetered(cm) ? MAX_HEIGHT_METERED : MAX_HEIGHT_UNMETERED;
+    }
+
+    private boolean isFailed(@NonNull final String key) {
+        final Long at = failed.get(key);
+        if (at == null) {
+            return false;
+        }
+        if (SystemClock.uptimeMillis() - at > FAIL_TTL_MS) {
+            failed.remove(key);
+            return false;
+        }
+        return true;
+    }
+
+    private void markFailed(@NonNull final String key) {
+        if (failed.size() > 200) {
+            failed.clear();
+        }
+        failed.put(key, SystemClock.uptimeMillis());
     }
 
     private float visibleFraction(@NonNull final View thumb, @NonNull final Rect out) {
@@ -220,7 +329,7 @@ public final class InlinePreviewController {
             }
             final InlinePreview.Target t = (InlinePreview.Target) tag;
             final View thumb = child.findViewById(R.id.itemThumbnailView);
-            if (!t.playable || thumb == null || failed.contains(t.key())) {
+            if (!t.playable || thumb == null || isFailed(t.key())) {
                 continue;
             }
             final float f = visibleFraction(thumb, r);
@@ -294,21 +403,36 @@ public final class InlinePreviewController {
     // region prefetch
 
     private void prefetchVisible() {
-        for (int i = 0; i < rv.getChildCount(); i++) {
-            final Object tag = rv.getChildAt(i).getTag(R.id.tag_inline_preview);
+        final Rect r = new Rect();
+        int started = 0;
+        for (int i = 0; i < rv.getChildCount() && started < PREFETCH_MAX; i++) {
+            final View child = rv.getChildAt(i);
+            final Object tag = child.getTag(R.id.tag_inline_preview);
             if (!(tag instanceof InlinePreview.Target)) {
                 continue;
             }
             final InlinePreview.Target t = (InlinePreview.Target) tag;
-            if (!t.playable || !prefetched.add(t.key())) {
+            final View thumb = child.findViewById(R.id.itemThumbnailView);
+            if (!t.playable || thumb == null || isFailed(t.key())
+                    || visibleFraction(thumb, r) < PREFETCH_MIN_VISIBLE
+                    || !prefetched.add(t.key())) {
                 continue;
             }
             if (prefetched.size() > 300) {
                 prefetched.clear();
             }
-            prefetchDisposables.add(ExtractorHelper.getStreamInfo(t.serviceId, t.url, false)
+            started++;
+            final Disposable[] holder = new Disposable[1];
+            holder[0] = ExtractorHelper.getStreamInfo(t.serviceId, t.url, false)
                     .subscribeOn(Schedulers.io())
-                    .subscribe(info -> { }, e -> prefetched.remove(t.key())));
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doFinally(() -> {
+                        if (holder[0] != null) {
+                            prefetchDisposables.delete(holder[0]);
+                        }
+                    })
+                    .subscribe(info -> { }, e -> prefetched.remove(t.key()));
+            prefetchDisposables.add(holder[0]);
         }
     }
 
@@ -338,7 +462,7 @@ public final class InlinePreviewController {
         player = new ExoPlayer.Builder(appContext,
                 new DefaultRenderersFactory(appContext).setEnableDecoderFallback(true))
                 .setLoadControl(new DefaultLoadControl.Builder()
-                        .setBufferDurationsMs(15000, 60000, 800, 1500)
+                        .setBufferDurationsMs(5000, 15000, 800, 1500)
                         .build())
                 .build();
         player.setRepeatMode(Player.REPEAT_MODE_ONE);
@@ -380,7 +504,7 @@ public final class InlinePreviewController {
     }
 
     private boolean isMuted() {
-        return prefs.getBoolean(appContext.getString(R.string.inline_preview_muted_key), true);
+        return !unmutedThisSession;
     }
 
     private void applyAudio() {
@@ -402,7 +526,7 @@ public final class InlinePreviewController {
         host = cardView;
         current = target;
         retryLevel = 0;
-        maxHeight = MAX_HEIGHT;
+        maxHeight = baseMaxHeight();
         pendingKey = null;
         videoAspect = 0f;
 
@@ -423,7 +547,7 @@ public final class InlinePreviewController {
                     currentInfo = loaded.info;
                     play(loaded.source);
                 }, error -> {
-                    failed.add(target.key());
+                    markFailed(target.key());
                     if (current == target) {
                         stopPlayback();
                     }
@@ -463,15 +587,15 @@ public final class InlinePreviewController {
             return;
         }
         if (retryLevel >= 2) {
-            failed.add(target.key());
+            markFailed(target.key());
             stopPlayback();
             return;
         }
-        maxHeight = retryLevel == 0 ? 720 : 360;
+        maxHeight = retryLevel == 0 ? Math.min(maxHeight, 480) : 360;
         retryLevel++;
         final MediaSource source = resolver.resolve(currentInfo);
         if (source == null) {
-            failed.add(target.key());
+            markFailed(target.key());
             stopPlayback();
             return;
         }
@@ -520,8 +644,7 @@ public final class InlinePreviewController {
         }
         updateMuteIcon((ImageView) mute);
         mute.setOnClickListener(v -> {
-            prefs.edit().putBoolean(appContext.getString(R.string.inline_preview_muted_key),
-                    !isMuted()).apply();
+            unmutedThisSession = isMuted();
             applyAudio();
             updateMuteIcon((ImageView) mute);
         });
