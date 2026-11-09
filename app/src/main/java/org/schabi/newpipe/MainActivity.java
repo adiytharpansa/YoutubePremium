@@ -357,8 +357,8 @@ public class MainActivity extends AppCompatActivity {
                 NavigationHelper.openDownloads(this);
                 return false;
             } else if (itemId == R.id.bottom_nav_you) {
-                // EggPlay: "You" is the library (playlists), like YouTube
-                NavigationHelper.openBookmarksFragment(fm);
+                // EggPlay: "You" shows stats and shortcuts to library / settings
+                NavigationHelper.openYouFragment(fm);
             } else {
                 return false;
             }
@@ -404,7 +404,8 @@ public class MainActivity extends AppCompatActivity {
             selectedId = R.id.bottom_nav_live;
         } else if (current instanceof SubscriptionFragment) {
             selectedId = R.id.bottom_nav_home;
-        } else if (current instanceof BookmarkFragment) {
+        } else if (current instanceof BookmarkFragment
+                || current instanceof org.schabi.newpipe.fragments.YouFragment) {
             selectedId = R.id.bottom_nav_you;
         } else {
             selectedId = 0;

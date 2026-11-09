@@ -13,6 +13,7 @@
         android:background="?attr/windowBackground"
         android:gravity="center_vertical"
         android:minHeight="?attr/actionBarSize"
+        app:contentInsetEnd="8dp"
         android:theme="@style/ContrastToolbarTheme">
 
         <include

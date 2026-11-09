@@ -192,13 +192,6 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
             NavigationHelper.openFeedFragment(getFM());
             return true;
         }
-        if (item.getItemId() == R.id.action_profile) {
-            // EggPlay: profile icon (top right) opens the side menu
-            if (activity instanceof org.schabi.newpipe.MainActivity) {
-                ((org.schabi.newpipe.MainActivity) activity).openSideMenu();
-            }
-            return true;
-        }
         if (item.getItemId() == R.id.action_search) {
             try {
                 NavigationHelper.openSearchFragment(getFM(),
@@ -218,6 +211,9 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
     private void setupTabs() {
         tabsList.clear();
         tabsList.addAll(tabsManager.getTabs());
+        // EggPlay: the Live page is already in the bottom navigation, so hide the duplicate chip
+        tabsList.removeIf(tab -> tab instanceof Tab.KioskTab
+                && "live".equals(((Tab.KioskTab) tab).getKioskId()));
 
         if (pagerAdapter == null || !pagerAdapter.sameTabs(tabsList)) {
             pagerAdapter = new SelectedTabsPagerAdapter(requireContext(),

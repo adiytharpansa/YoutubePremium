@@ -161,4 +161,15 @@
 
     <style name="RouterActivityThemeDark" parent="Base.RouterActivityThemeDark" />
 
+
+    <!-- EggPlay: section title on the You screen -->
+    <style name="YouSectionTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>
