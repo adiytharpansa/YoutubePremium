@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import org.schabi.newpipe.MainActivity
 import org.schabi.newpipe.R
+import org.schabi.newpipe.preview.InlinePreview
 import org.schabi.newpipe.database.stream.StreamWithState
 import org.schabi.newpipe.database.stream.model.StreamEntity
 import org.schabi.newpipe.databinding.ListStreamItemBinding
@@ -64,6 +65,9 @@ data class StreamItem(
     }
 
     override fun bind(viewBinding: ListStreamItemBinding, position: Int) {
+        if (itemVersion == ItemVersion.CARD) {
+            InlinePreview.bind(viewBinding.root, stream.serviceId, stream.url, stream.streamType)
+        }
         viewBinding.itemVideoTitleView.text = stream.title
         viewBinding.itemUploaderView.text = stream.uploader
 

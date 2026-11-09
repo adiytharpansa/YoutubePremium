@@ -203,6 +203,12 @@ public class InfoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     @Override
+    public void onAttachedToRecyclerView(@NonNull final RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        org.schabi.newpipe.preview.InlinePreview.attach(recyclerView);
+    }
+
+    @Override
     public int getItemCount() {
         int count = infoItemList.size();
         if (hasHeader()) {

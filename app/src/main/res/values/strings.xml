@@ -910,4 +910,8 @@
     <string name="api23_requirement_dialog_title">EggPlay is dropping support for Android 5</string>
     <string name="api23_requirement_dialog_message">Unfortunately EggPlay depends on a few libraries that dropped support for Android 5.0 and 5.1. The next EggPlay release will therefore only work on devices with Android 6 or higher, sadly. Read more in the blogpost.</string>
     <string name="api23_requirement_dialog_blogpost">Blogpost</string>
+    <string name="inline_preview_title">Autoplay preview</string>
+    <string name="inline_preview_summary">Play videos automatically in the list as you scroll</string>
+    <string name="inline_preview_mute">Mute</string>
+    <string name="inline_preview_unmute">Unmute</string>
 </resources>

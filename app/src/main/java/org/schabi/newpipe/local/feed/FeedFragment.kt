@@ -57,6 +57,7 @@ import java.time.OffsetDateTime
 import java.util.function.Consumer
 import org.schabi.newpipe.NewPipeDatabase
 import org.schabi.newpipe.R
+import org.schabi.newpipe.preview.InlinePreview
 import org.schabi.newpipe.database.feed.model.FeedGroupEntity
 import org.schabi.newpipe.database.subscription.SubscriptionEntity
 import org.schabi.newpipe.databinding.FragmentFeedBinding
@@ -160,6 +161,7 @@ class FeedFragment : BaseStateFragment<FeedState>() {
         })
 
         feedBinding.itemsList.adapter = groupAdapter
+        InlinePreview.attach(feedBinding.itemsList)
         setupListViewMode()
     }
 

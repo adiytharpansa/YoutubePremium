@@ -34,6 +34,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- EggPlay: inline autoplay preview, drawn over the thumbnail -->
+    <TextureView
+        android:id="@+id/itemPreviewTexture"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.01"
+        android:importantForAccessibility="no"
+        app:layout_constraintDimensionRatio="16:9"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/itemPreviewMute"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_margin="8dp"
+        android:background="@drawable/preview_mute_background"
+        android:contentDescription="@string/inline_preview_unmute"
+        android:padding="8dp"
+        android:src="@drawable/ic_eg_volume_off"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/itemThumbnailView"
+        app:layout_constraintTop_toTopOf="@id/itemThumbnailView" />
+
     <!-- Watch progress, drawn over the bottom edge of the thumbnail -->
     <org.schabi.newpipe.views.AnimatedProgressBar
         android:id="@+id/itemProgressView"
