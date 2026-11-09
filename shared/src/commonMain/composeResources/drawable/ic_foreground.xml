@@ -1,34 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ EggPlay logo (Logo C): an egg split white / orange with a play triangle
-  ~ cut out in the centre. Original artwork for EggPlay; replaces the
-  ~ upstream NewPipe glyph on the About screen.
-  ~ SPDX-License-Identifier: GPL-3.0-or-later
+  EggPlay logo (v2): modern egg + rounded play cut-out. SPDX-License-Identifier: GPL-3.0-or-later
   -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
+<vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-
-    <!-- Left half of the egg: white -->
-    <group>
-        <clip-path android:pathData="M20,0 L54,0 L54,108 L20,108 Z" />
-        <path
-            android:pathData="M54,20 C63,20 77,38 77,57 C77,74 66,88 54,88 C42,88 31,74 31,57 C31,38 43,20 54,20 Z"
-            android:fillColor="#F6F6F6" />
-    </group>
-
-    <!-- Right half of the egg: orange -->
-    <group>
-        <clip-path android:pathData="M54,0 L88,0 L88,108 L54,108 Z" />
-        <path
-            android:pathData="M54,20 C63,20 77,38 77,57 C77,74 66,88 54,88 C42,88 31,74 31,57 C31,38 43,20 54,20 Z"
-            android:fillColor="#FC6401" />
-    </group>
-
-    <!-- Play triangle, in the background colour so it reads as a cut-out -->
     <path
-        android:pathData="M43,42 L69,54 L43,66 Z"
-        android:fillColor="#27292D" />
+        android:pathData="M0,0H108V108H0Z"
+        android:fillColor="#FF5E0A" />
+    <path
+        android:pathData="M54,21 C68,21 80.5,44 80.5,62 C80.5,77 69,86 54,86 C39,86 27.5,77 27.5,62 C27.5,44 40,21 54,21 Z M49.98,50.81 Q46.00,48.50 46.00,53.10 L46.00,72.90 Q46.00,77.50 49.98,75.19 L67.02,65.31 Q71.00,63.00 67.02,60.69 Z"
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd" />
 </vector>
