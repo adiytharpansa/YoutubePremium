@@ -142,12 +142,20 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
     // Load and handle
     //////////////////////////////////////////////////////////////////////////*/
 
-    /** EggPlay: the Live kiosk keeps live streams, every other kiosk (Home) hides them. */
+    /**
+     * EggPlay: the Live kiosk keeps live streams, every other kiosk (Home) hides them.
+     *
+     * @return true if this fragment shows the Live kiosk
+     */
     private boolean isLiveKiosk() {
         return "live".equals(kioskId);
     }
 
-    /** EggPlay: personalised ranking is applied only to the Home (default kiosk) tab. */
+    /**
+     * EggPlay: personalised ranking is applied only to the Home (default kiosk) tab.
+     *
+     * @return true if this fragment is the default (Home) kiosk
+     */
     private boolean isHomeKiosk() {
         return this instanceof DefaultKioskFragment;
     }
@@ -183,6 +191,11 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
     /**
      * Loads the next page and drops live streams. If a whole page was live streams, the
      * following page is fetched right away (max 3 hops) so infinite scroll does not stall.
+     *
+     * @param page the page to load next
+     * @param appContext application context used for the next-page request
+     * @param hops how many live-only pages have already been skipped
+     * @return a Single emitting the filtered page of stream items
      */
     private Single<ListExtractor.InfoItemsPage<StreamInfoItem>> loadMoreFiltered(
             final Page page, final Context appContext, final int hops) {
