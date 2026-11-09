@@ -54,7 +54,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  * <ul>
  *   <li>One shared ExoPlayer, moved from card to card; starts shortly after a card settles.</li>
  *   <li>Highest quality up to 1080p (the card is never larger), full length, looping.</li>
- *   <li>Stream info of every card on screen is prefetched so the next preview starts instantly.</li>
+ *   <li>Stream info of every card on screen is prefetched so the next preview
+ *   starts instantly.</li>
  *   <li>Muted by default with a mute button; if a stream fails it retries at lower quality.</li>
  * </ul>
  */
