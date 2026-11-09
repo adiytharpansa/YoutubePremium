@@ -502,7 +502,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /** Only on top-level destinations (bottom nav visible), not while searching. */
+    /**
+     * Only on top-level destinations (bottom nav visible), not while searching.
+     *
+     * @return true if the bars may auto-hide on the current destination
+     */
     private boolean canAutoHideBars() {
         return mainBinding.bottomNavigation.getVisibility() == View.VISIBLE
                 && toolbarLayoutBinding.toolbarSearchContainer.getRoot()
@@ -544,6 +548,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Slides the toolbar up and the bottom nav down by {@code hidden} (0..1) and grows the
      * fragment holder into the freed space so the content follows without leaving gaps.
+     *
+     * @param hidden how far the bars are hidden, from 0 (fully shown) to 1 (fully hidden)
      */
     private void applyBars(final float hidden) {
         barsHidden = hidden;

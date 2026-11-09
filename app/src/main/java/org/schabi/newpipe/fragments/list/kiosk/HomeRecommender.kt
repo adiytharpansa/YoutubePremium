@@ -47,16 +47,20 @@ object HomeRecommender {
     }
 
     @Volatile private var cachedProfile: Profile? = null
+
     @Volatile private var cachedAt = 0L
 
     /** Live streams are shown only in the Live tab, never in the Home feed. */
     @JvmStatic
-    fun isLive(item: StreamInfoItem): Boolean =
-        item.streamType == StreamType.LIVE_STREAM || item.streamType == StreamType.AUDIO_LIVE_STREAM
+    fun isLive(item: StreamInfoItem): Boolean {
+        return item.streamType == StreamType.LIVE_STREAM
+            || item.streamType == StreamType.AUDIO_LIVE_STREAM
+    }
 
     @JvmStatic
-    fun withoutLive(items: List<StreamInfoItem>): List<StreamInfoItem> =
-        items.filterNot { isLive(it) }
+    fun withoutLive(items: List<StreamInfoItem>): List<StreamInfoItem> {
+        return items.filterNot { isLive(it) }
+    }
 
     /** Call when the user watched something so the next Home load reflects it immediately. */
     @JvmStatic
@@ -103,7 +107,9 @@ object HomeRecommender {
             val url = item.url
             when {
                 url in profile.finishedUrls -> s -= 3.0 // already watched
+
                 url in profile.resumeUrls -> s += 0.6 // started but not finished
+
                 url in profile.watchedUrls -> s -= 0.8
             }
             s -= min(1.5, 0.5 * (impressions[url] ?: 0)) // seen before, not clicked
