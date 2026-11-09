@@ -40,6 +40,7 @@ import org.schabi.newpipe.util.Localization;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.WeakHashMap;
 
 import io.reactivex.rxjava3.core.Single;
@@ -225,6 +226,42 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
 
         name = kioskTranslatedName;
         setTitle(kioskTranslatedName);
+        purgeLiveItems();
+    }
+
+    @Override
+    public void handleNextItems(final ListExtractor.InfoItemsPage<StreamInfoItem> result) {
+        if (isLiveKiosk()) {
+            super.handleNextItems(result);
+            return;
+        }
+        super.handleNextItems(new ListExtractor.InfoItemsPage<>(
+                HomeRecommender.withoutLive(result.getItems()),
+                result.getNextPage(), result.getErrors()));
+    }
+
+    @Override
+    public void readFrom(@NonNull final Queue<Object> savedObjects) throws Exception {
+        super.readFrom(savedObjects);
+        purgeLiveItems();
+    }
+
+    /**
+     * EggPlay: last line of defence for the Home feed. The item list can be repopulated
+     * without going through {@link #loadResult} (e.g. list state restored by StateSaver
+     * from an older app version that had no live filter); drop live streams that slipped
+     * in that way so they are only ever shown in the Live kiosk.
+     */
+    private void purgeLiveItems() {
+        if (isLiveKiosk() || infoListAdapter == null) {
+            return;
+        }
+        final boolean removed = infoListAdapter.getItemsList().removeIf(item ->
+                item instanceof StreamInfoItem
+                        && HomeRecommender.isLive((StreamInfoItem) item));
+        if (removed) {
+            infoListAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
