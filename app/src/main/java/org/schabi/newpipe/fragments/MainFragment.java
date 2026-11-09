@@ -106,6 +106,10 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
 
         binding = FragmentMainBinding.bind(rootView);
 
+        // EggPlay: subtle fade while swiping between tabs
+        binding.pager.setPageTransformer(false, (page, position) ->
+                page.setAlpha(Math.max(0.5f, 1f - Math.abs(position) * 0.5f)));
+
         binding.mainTabLayout.setupWithViewPager(binding.pager);
         binding.mainTabLayout.addOnTabSelectedListener(this);
 
@@ -164,11 +168,37 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         final ActionBar supportActionBar = activity.getSupportActionBar();
         if (supportActionBar != null) {
             supportActionBar.setDisplayHomeAsUpEnabled(false);
+            // EggPlay: logo next to the title, like YouTube's logo
+            supportActionBar.setLogo(R.drawable.eggplay_logo_toolbar);
+            supportActionBar.setDisplayUseLogoEnabled(true);
+            supportActionBar.setDisplayShowHomeEnabled(true);
+        }
+    }
+
+    @Override
+    public void onDestroyOptionsMenu() {
+        super.onDestroyOptionsMenu();
+        final ActionBar supportActionBar = activity.getSupportActionBar();
+        if (supportActionBar != null) {
+            supportActionBar.setDisplayUseLogoEnabled(false);
+            supportActionBar.setLogo(null);
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
+        if (item.getItemId() == R.id.action_notifications) {
+            // EggPlay: bell icon opens the subscriptions feed (new videos)
+            NavigationHelper.openFeedFragment(getFM());
+            return true;
+        }
+        if (item.getItemId() == R.id.action_profile) {
+            // EggPlay: profile icon (top right) opens the side menu
+            if (activity instanceof org.schabi.newpipe.MainActivity) {
+                ((org.schabi.newpipe.MainActivity) activity).openSideMenu();
+            }
+            return true;
+        }
         if (item.getItemId() == R.id.action_search) {
             try {
                 NavigationHelper.openSearchFragment(getFM(),
@@ -208,14 +238,17 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
             final TabLayout.Tab tabToSet = binding.mainTabLayout.getTabAt(i);
             if (tabToSet != null) {
                 final Tab tab = tabsList.get(i);
-                tabToSet.setIcon(tab.getTabIconRes(requireContext()));
+                // EggPlay: YouTube-style text tabs instead of icon-only tabs
+                tabToSet.setIcon(null);
+                tabToSet.setText(tab.getTabName(requireContext()));
                 tabToSet.setContentDescription(tab.getTabName(requireContext()));
             }
         }
     }
 
     private void updateTitleForTab(final int tabPosition) {
-        setTitle(tabsList.get(tabPosition).getTabName(requireContext()));
+        // EggPlay: the toolbar shows the app name, like YouTube's logo
+        setTitle(getString(R.string.app_name));
     }
 
     public void commitPlaylistTabs() {
@@ -245,15 +278,15 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
 
         // change the background and icon color of the tab layout:
         // service-colored at the top, app-background-colored at the bottom
+        // EggPlay: always app-background-coloured, with a brand-orange indicator
         tabLayout.setBackgroundColor(ThemeHelper.resolveColorFromAttr(requireContext(),
-                bottom ? android.R.attr.windowBackground : R.attr.colorPrimary));
+                android.R.attr.windowBackground));
 
-        @ColorInt final int iconColor = bottom
-                ? ThemeHelper.resolveColorFromAttr(requireContext(), android.R.attr.colorAccent)
-                : Color.WHITE;
+        @ColorInt final int iconColor = ThemeHelper.resolveColorFromAttr(requireContext(),
+                android.R.attr.colorAccent);
         tabLayout.setTabRippleColor(ColorStateList.valueOf(iconColor).withAlpha(32));
         tabLayout.setTabIconTint(ColorStateList.valueOf(iconColor));
-        tabLayout.setSelectedTabIndicatorColor(iconColor);
+        tabLayout.setSelectedTabIndicatorColor(Color.parseColor("#FC6401"));
     }
 
     @Override

@@ -2000,8 +2000,9 @@ public final class VideoDetailFragment
         }
         activity.getWindow().getDecorView().setSystemUiVisibility(0);
         activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        // EggPlay: status bar matches the app surface, not the brand colour
         activity.getWindow().setStatusBarColor(ThemeHelper.resolveColorFromAttr(
-                requireContext(), android.R.attr.colorPrimary));
+                requireContext(), android.R.attr.windowBackground));
     }
 
     private void hideSystemUi() {

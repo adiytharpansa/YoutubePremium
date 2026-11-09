@@ -91,8 +91,8 @@ fun LicenseDialog(
 private fun LicenseDialogPreview() {
     LicenseDialog(
         license = License(
-            name = "NewPipe",
-            website = "https://newpipe.net/",
+            name = "EggPlay",
+            website = "https://www.gnu.org/licenses/gpl-3.0.html",
             spdxID = "GPL-3.0-or-later"
         )
     )

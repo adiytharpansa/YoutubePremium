@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- eggplay: rounded duration badge overlaid on thumbnails (YouTube-style). -->
+<!-- EggPlay: rounded duration badge overlaid on thumbnails (YouTube-style). -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <corners android:radius="4dp" />

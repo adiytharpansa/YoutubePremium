@@ -2,7 +2,7 @@
 <resources>
     <color name="contrastColor">@color/white</color>
     <color name="defaultIconTint">@color/white</color>
-    <!-- eggplay: dark-theme subscribe button states, YouTube-style
+    <!-- EggPlay: dark-theme subscribe button states, YouTube-style
          (neutral dark pill when subscribed instead of the light grey
          used in the light theme) -->
     <color name="subscribed_background_color">#272727</color>

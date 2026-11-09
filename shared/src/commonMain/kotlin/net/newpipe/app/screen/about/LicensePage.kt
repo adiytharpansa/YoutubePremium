@@ -107,8 +107,8 @@ fun LicensePageContent(
                         .wrapContentWidth(Alignment.End),
                     onClick = {
                         licenseToShow = License(
-                            name = "NewPipe",
-                            website = "https://newpipe.net/",
+                            name = "EggPlay",
+                            website = "https://www.gnu.org/licenses/gpl-3.0.html",
                             spdxID = "GPL-3.0-or-later"
                         )
                         shouldShowLicenseDialog = true

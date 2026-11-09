@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  EggPlay toolbar logo: orange egg with the play triangle knocked out.
+  SPDX-License-Identifier: GPL-3.0-or-later
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M54,14 C65,14 82,36 82,58 C82,78 69,94 54,94 C39,94 26,78 26,58 C26,36 43,14 54,14 Z M42,42 L72,56 L42,70 Z"
+        android:fillColor="#FC6401"
+        android:fillType="evenOdd" />
+</vector>

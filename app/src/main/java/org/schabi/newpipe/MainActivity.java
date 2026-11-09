@@ -74,6 +74,7 @@ import org.schabi.newpipe.extractor.exceptions.ExtractionException;
 import org.schabi.newpipe.extractor.services.peertube.PeertubeInstance;
 import org.schabi.newpipe.fragments.BackPressable;
 import org.schabi.newpipe.fragments.MainFragment;
+import org.schabi.newpipe.fragments.list.kiosk.KioskFragment;
 import org.schabi.newpipe.fragments.detail.VideoDetailFragment;
 import org.schabi.newpipe.fragments.list.comments.CommentRepliesFragment;
 import org.schabi.newpipe.fragments.list.search.SearchFragment;
@@ -208,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
         // ReleaseVersionUtil.INSTANCE.isReleaseApk() will be true only for main official build
         // We want every release build (nightly, nightly-refactor) to show the popup
         if (!DEBUG) {
-            showKeepAndroidDialog();
+            // EggPlay: upstream campaign dialog removed
             showApi23RequirementDialog();
         }
 
@@ -316,20 +317,16 @@ public class MainActivity extends AppCompatActivity {
                 .add(R.id.menu_options_about_group, ITEM_ID_SETTINGS, ORDER, R.string.settings)
                 .setIcon(R.drawable.ic_settings);
         drawerLayoutBinding.navigation.getMenu()
-                .add(R.id.menu_options_about_group, ITEM_ID_DONATION, ORDER,
-                        R.string.donation_title)
-                .setIcon(R.drawable.volunteer_activism_ic);
-        drawerLayoutBinding.navigation.getMenu()
                 .add(R.id.menu_options_about_group, ITEM_ID_ABOUT, ORDER, R.string.tab_about)
                 .setIcon(R.drawable.ic_info_outline);
     }
 
-    // region eggplay: bottom navigation
+    // region EggPlay: bottom navigation
 
     private boolean updatingBottomNavSelection;
 
     /**
-     * eggplay: wires the YouTube-style bottom navigation. Its destinations call the
+     * EggPlay: wires the YouTube-style bottom navigation. Its destinations call the
      * same NavigationHelper entry points as the navigation drawer, and its
      * visibility is kept in sync with the visible fragment and the player sheet.
      */
@@ -343,11 +340,17 @@ public class MainActivity extends AppCompatActivity {
             final FragmentManager fm = getSupportFragmentManager();
             if (itemId == R.id.bottom_nav_home) {
                 NavigationHelper.gotoMainFragment(fm);
-            } else if (itemId == R.id.bottom_nav_feed) {
-                NavigationHelper.openFeedFragment(fm);
-            } else if (itemId == R.id.bottom_nav_subscriptions) {
+            } else if (itemId == R.id.bottom_nav_live) {
+                try {
+                    NavigationHelper.openKioskFragment(fm, 0, "live");
+                } catch (final Exception e) {
+                    ErrorUtil.showUiErrorSnackbar(this, "Opening live kiosk", e);
+                }
+            } else if (itemId == R.id.bottom_nav_create) {
+                // EggPlay: "+" manages/adds subscribed channels
                 NavigationHelper.openSubscriptionFragment(fm);
-            } else if (itemId == R.id.bottom_nav_bookmarks) {
+            } else if (itemId == R.id.bottom_nav_you) {
+                // EggPlay: "You" is the library (playlists), like YouTube
                 NavigationHelper.openBookmarksFragment(fm);
             } else {
                 return false;
@@ -374,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * eggplay: shows the bottom navigation only on the main top-level destinations
+     * EggPlay: shows the bottom navigation only on the main top-level destinations
      * (main page, feed, subscriptions, bookmarks) and only while the player sheet
      * is not covering the bottom of the screen (expanded player or mini player).
      * Also keeps the fragment holder's bottom margin and the selected item in sync.
@@ -388,11 +391,14 @@ public class MainActivity extends AppCompatActivity {
         if (current instanceof MainFragment) {
             selectedId = R.id.bottom_nav_home;
         } else if (current instanceof FeedFragment) {
-            selectedId = R.id.bottom_nav_feed;
+            selectedId = R.id.bottom_nav_home;
+        } else if (current instanceof KioskFragment
+                && "live".equals(((KioskFragment) current).getKioskId())) {
+            selectedId = R.id.bottom_nav_live;
         } else if (current instanceof SubscriptionFragment) {
-            selectedId = R.id.bottom_nav_subscriptions;
+            selectedId = R.id.bottom_nav_create;
         } else if (current instanceof BookmarkFragment) {
-            selectedId = R.id.bottom_nav_bookmarks;
+            selectedId = R.id.bottom_nav_you;
         } else {
             selectedId = 0;
         }
@@ -494,9 +500,6 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case ITEM_ID_SETTINGS:
                 NavigationHelper.openSettings(this);
-                break;
-            case ITEM_ID_DONATION:
-                ShareUtils.openUrlInBrowser(this, getString(R.string.donation_url));
                 break;
             case ITEM_ID_ABOUT:
                 NavigationHelper.openAbout(this);
@@ -888,6 +891,11 @@ public class MainActivity extends AppCompatActivity {
     // Utils
     //////////////////////////////////////////////////////////////////////////*/
 
+    /** EggPlay: opens the side menu (services, settings, about) from the toolbar. */
+    public void openSideMenu() {
+        mainBinding.getRoot().openDrawer(GravityCompat.START);
+    }
+
     private void updateDrawerNavigation() {
         if (getSupportActionBar() == null) {
             return;
@@ -899,6 +907,9 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             if (toggle != null) {
                 toggle.syncState();
+                // EggPlay: no hamburger icon on the home page, like YouTube; the side menu
+                // is opened by the profile icon or by swiping from the left edge
+                toolbarLayoutBinding.toolbar.setNavigationIcon(null);
                 toolbarLayoutBinding.toolbar.setNavigationOnClickListener(v -> mainBinding.getRoot()
                         .open());
                 mainBinding.getRoot().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNDEFINED);
@@ -1144,20 +1155,13 @@ public class MainActivity extends AppCompatActivity {
             return; // dialog was already shown in the past, no need to show it again
         }
 
-        final var dialog = new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setTitle(R.string.api23_requirement_dialog_title)
                 .setCancelable(false)
                 .setMessage(R.string.api23_requirement_dialog_message)
                 .setPositiveButton(android.R.string.ok, (d, w) -> prefs.edit()
                         .putBoolean(shownKey, true)
                         .apply())
-                .setNegativeButton(R.string.api23_requirement_dialog_blogpost, null)
                 .show();
-
-        // If we use setNegativeButton, dialog will close after pressing the button,
-        // but we want it to close only when positive button is pressed
-        final var blogpostUrl = "https://newpipe.net/blog/pinned/announcement/drop-android-5/";
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-                .setOnClickListener(v -> ShareUtils.openUrlInBrowser(this, blogpostUrl));
     }
 }

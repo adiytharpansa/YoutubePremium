@@ -18,6 +18,7 @@ import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
+import com.google.android.exoplayer2.upstream.DefaultLoadErrorHandlingPolicy;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor;
@@ -51,6 +52,13 @@ public class PlayerDataSource {
      * {@link YoutubePostLiveStreamDvrDashManifestCreator}.
      */
     private static final int MAX_MANIFEST_CACHE_SIZE = 500;
+
+    /**
+     * EggPlay: more tolerant network settings so playback survives short drops on slow or
+     * unstable mobile connections instead of stalling or failing.
+     */
+    private static final int NETWORK_TIMEOUT_MILLIS = 15000;
+    private static final int ADAPTIVE_LOAD_RETRY_COUNT = 5;
 
     /**
      * The folder name in which the ExoPlayer cache will be written.
@@ -88,10 +96,14 @@ public class PlayerDataSource {
 
         // generic data source factories use DefaultHttpDataSource.Factory
         cachelessDataSourceFactory = new DefaultDataSource.Factory(context,
-                new DefaultHttpDataSource.Factory().setUserAgent(DownloaderImpl.USER_AGENT))
+                new DefaultHttpDataSource.Factory().setUserAgent(DownloaderImpl.USER_AGENT)
+                        .setConnectTimeoutMs(NETWORK_TIMEOUT_MILLIS)
+                        .setReadTimeoutMs(NETWORK_TIMEOUT_MILLIS))
                 .setTransferListener(transferListener);
         cacheDataSourceFactory = new CacheFactory(context, transferListener, cache,
-                new DefaultHttpDataSource.Factory().setUserAgent(DownloaderImpl.USER_AGENT));
+                new DefaultHttpDataSource.Factory().setUserAgent(DownloaderImpl.USER_AGENT)
+                        .setConnectTimeoutMs(NETWORK_TIMEOUT_MILLIS)
+                        .setReadTimeoutMs(NETWORK_TIMEOUT_MILLIS));
 
         // YouTube-specific data source factories use getYoutubeHttpDataSourceFactory()
         ytHlsCacheDataSourceFactory = new CacheFactory(context, transferListener, cache,
@@ -175,13 +187,17 @@ public class PlayerDataSource {
 
     //region YouTube media source factories
     public HlsMediaSource.Factory getYoutubeHlsMediaSourceFactory() {
-        return new HlsMediaSource.Factory(ytHlsCacheDataSourceFactory);
+        return new HlsMediaSource.Factory(ytHlsCacheDataSourceFactory)
+                .setLoadErrorHandlingPolicy(
+                        new DefaultLoadErrorHandlingPolicy(ADAPTIVE_LOAD_RETRY_COUNT));
     }
 
     public DashMediaSource.Factory getYoutubeDashMediaSourceFactory() {
         return new DashMediaSource.Factory(
                 getDefaultDashChunkSourceFactory(ytDashCacheDataSourceFactory),
-                ytDashCacheDataSourceFactory);
+                ytDashCacheDataSourceFactory)
+                .setLoadErrorHandlingPolicy(
+                        new DefaultLoadErrorHandlingPolicy(ADAPTIVE_LOAD_RETRY_COUNT));
     }
 
     public ProgressiveMediaSource.Factory getYoutubeProgressiveMediaSourceFactory() {
@@ -201,6 +217,8 @@ public class PlayerDataSource {
             final boolean rangeParameterEnabled,
             final boolean rnParameterEnabled) {
         return new YoutubeHttpDataSource.Factory()
+                .setConnectTimeoutMs(NETWORK_TIMEOUT_MILLIS)
+                .setReadTimeoutMs(NETWORK_TIMEOUT_MILLIS)
                 .setRangeParameterEnabled(rangeParameterEnabled)
                 .setRnParameterEnabled(rnParameterEnabled);
     }

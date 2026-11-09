@@ -41,6 +41,15 @@ import io.reactivex.rxjava3.core.Single;
 public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInfo> {
     @State
     String kioskId = "";
+
+    /**
+     * EggPlay: lets the bottom navigation know which kiosk is shown.
+     *
+     * @return the id of the kiosk shown by this fragment
+     */
+    public String getKioskId() {
+        return kioskId;
+    }
     String kioskTranslatedName;
     @State
     ContentCountry contentCountry;

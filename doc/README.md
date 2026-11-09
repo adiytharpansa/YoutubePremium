@@ -1,5 +1,5 @@
 <p align="center"><img src="/assets/eggplay_icon.png" width="150"></p>
-<h2 align="center"><b>eggplay</b></h2>
+<h2 align="center"><b>EggPlay</b></h2>
 <h4 align="center">A libre lightweight streaming front-end for Android, with a YouTube-style interface.</h4>
 
 <p align="center">
@@ -7,10 +7,10 @@
 </p>
 
 <p align="center">
-<b>eggplay</b> is a modified version of <a href="https://github.com/TeamNewPipe/NewPipe">NewPipe</a>
-(developed by TeamNewPipe and contributors, GPLv3). eggplay 1.0.0 is based on
+<b>EggPlay</b> is a modified version of <a href="https://github.com/TeamNewPipe/NewPipe">NewPipe</a>
+(developed by TeamNewPipe and contributors, GPLv3). EggPlay 1.0.0 is based on
 NewPipe 0.29.2 and rebrands the app (name, icon, colours and feed styling)
-while keeping NewPipe's features and code. eggplay is not affiliated with
+while keeping NewPipe's features and code. EggPlay is not affiliated with
 NewPipe, YouTube or Google.
 </p>
 

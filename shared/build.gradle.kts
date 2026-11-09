@@ -14,10 +14,10 @@ plugins {
 }
 
 compose.resources {
-    // eggplay: pin the generated resources class to the original package.
+    // EggPlay: pin the generated resources class to the original package.
     // Upstream sources import newpipe.shared.generated.resources; by default
-    // that package is derived from the root project name, which eggplay
-    // renamed from "NewPipe" to "eggplay" in settings.gradle.kts.
+    // that package is derived from the root project name, which EggPlay
+    // renamed from "NewPipe" to "EggPlay" in settings.gradle.kts.
     packageOfResClass = "newpipe.shared.generated.resources"
 }
 
@@ -30,7 +30,7 @@ val buildConfigGenerator by tasks.registering(Sync::class) {
 
         object BuildConfig {
             const val VERSION_NAME = "$NEWPIPE_VERSION_NAME"
-            const val APP_NAME = "eggplay"
+            const val APP_NAME = "EggPlay"
         }
     """.trimIndent()
     from(resources.text.fromString(rawClass)) {
