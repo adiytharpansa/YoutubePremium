@@ -106,6 +106,10 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
 
         binding = FragmentMainBinding.bind(rootView);
 
+        // EggPlay: subtle fade while swiping between tabs
+        binding.pager.setPageTransformer(false, (page, position) ->
+                page.setAlpha(Math.max(0.5f, 1f - Math.abs(position) * 0.5f)));
+
         binding.mainTabLayout.setupWithViewPager(binding.pager);
         binding.mainTabLayout.addOnTabSelectedListener(this);
 
@@ -186,6 +190,13 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         if (item.getItemId() == R.id.action_notifications) {
             // EggPlay: bell icon opens the subscriptions feed (new videos)
             NavigationHelper.openFeedFragment(getFM());
+            return true;
+        }
+        if (item.getItemId() == R.id.action_profile) {
+            // EggPlay: profile icon (top right) opens the side menu
+            if (activity instanceof org.schabi.newpipe.MainActivity) {
+                ((org.schabi.newpipe.MainActivity) activity).openSideMenu();
+            }
             return true;
         }
         if (item.getItemId() == R.id.action_search) {

@@ -146,12 +146,17 @@
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
+            android:background="?attr/windowBackground"
             app:tabGravity="fill"
-            app:tabIndicatorColor="@color/white"
+            app:tabIndicatorColor="#FC6401"
+            app:tabIndicatorHeight="3dp"
             app:tabMode="scrollable"
+            app:tabPaddingEnd="16dp"
+            app:tabPaddingStart="16dp"
             app:tabRippleColor="@color/white"
-            app:tabTextColor="@color/white" />
+            app:tabSelectedTextColor="@color/yt_tab_text_selected"
+            app:tabTextAppearance="@style/EggPlayTabText"
+            app:tabTextColor="@color/yt_tab_text" />
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/view_pager"

@@ -891,6 +891,11 @@ public class MainActivity extends AppCompatActivity {
     // Utils
     //////////////////////////////////////////////////////////////////////////*/
 
+    /** EggPlay: opens the side menu (services, settings, about) from the toolbar. */
+    public void openSideMenu() {
+        mainBinding.getRoot().openDrawer(GravityCompat.START);
+    }
+
     private void updateDrawerNavigation() {
         if (getSupportActionBar() == null) {
             return;
@@ -902,6 +907,9 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             if (toggle != null) {
                 toggle.syncState();
+                // EggPlay: no hamburger icon on the home page, like YouTube; the side menu
+                // is opened by the profile icon or by swiping from the left edge
+                toolbarLayoutBinding.toolbar.setNavigationIcon(null);
                 toolbarLayoutBinding.toolbar.setNavigationOnClickListener(v -> mainBinding.getRoot()
                         .open());
                 mainBinding.getRoot().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNDEFINED);
