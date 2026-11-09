@@ -115,7 +115,7 @@ fun AboutPageContent(
             }
         }
 
-        // Links about NewPipe
+        // EggPlay: no external project links
         items(items = links, key = { link -> link.url }) { link ->
             LinkListItem(
                 link = link,
@@ -126,38 +126,7 @@ fun AboutPageContent(
 }
 
 @Composable
-private fun defaultLinks() = listOf(
-    Link(
-        title = stringResource(Res.string.faq_title),
-        description = stringResource(Res.string.faq_description),
-        action = stringResource(Res.string.faq),
-        url = Constants.URL_FAQ
-    ),
-    Link(
-        title = stringResource(Res.string.contribution_title),
-        description = stringResource(Res.string.contribution_encouragement),
-        action = stringResource(Res.string.view_on_github),
-        url = Constants.URL_GITHUB
-    ),
-    Link(
-        title = stringResource(Res.string.donation_title),
-        description = stringResource(Res.string.donation_encouragement),
-        action = stringResource(Res.string.give_back),
-        url = Constants.URL_DONATION
-    ),
-    Link(
-        title = stringResource(Res.string.website_title),
-        description = stringResource(Res.string.website_encouragement),
-        action = stringResource(Res.string.open_in_browser),
-        url = Constants.URL_WEBSITE
-    ),
-    Link(
-        title = stringResource(Res.string.privacy_policy_title),
-        description = stringResource(Res.string.privacy_policy_encouragement),
-        action = stringResource(Res.string.read_privacy_policy),
-        url = Constants.URL_PRIVACY
-    )
-)
+private fun defaultLinks(): List<Link> = emptyList()
 
 @PreviewWrapper(ThemePreviewProvider::class)
 @PreviewLightDark

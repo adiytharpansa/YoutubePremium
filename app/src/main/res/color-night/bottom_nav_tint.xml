@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- eggplay: bottom navigation tint (dark theme) - brand orange when selected. -->
+<!-- EggPlay: bottom navigation tint (dark theme) - brand orange when selected. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="#FC6401" android:state_checked="true" />
+    <item android:color="#FFFFFF" android:state_checked="true" />
     <item android:color="#AAAAAA" />
 </selector>

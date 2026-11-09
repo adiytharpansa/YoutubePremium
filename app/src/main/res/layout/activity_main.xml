@@ -27,7 +27,7 @@
             app:behavior_peekHeight="0dp"
             app:layout_behavior="org.schabi.newpipe.player.gesture.CustomBottomSheetBehavior" />
 
-        <!-- eggplay: YouTube-style bottom navigation, shown on the main
+        <!-- EggPlay: YouTube-style bottom navigation, shown on the main
              top-level destinations and hidden while the player sheet or
              any detail screen is visible (see MainActivity). -->
         <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -35,11 +35,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:background="?attr/colorPrimary"
-            android:elevation="8dp"
+            android:background="?attr/windowBackground"
+            android:elevation="0dp"
+            android:foreground="@drawable/bottom_nav_divider"
             android:visibility="gone"
             app:itemIconTint="@color/bottom_nav_tint"
             app:itemTextColor="@color/bottom_nav_tint"
+            app:itemRippleColor="@android:color/transparent"
+            app:itemTextAppearanceActive="@style/EggPlayNavLabel"
+            app:itemTextAppearanceInactive="@style/EggPlayNavLabel"
             app:labelVisibilityMode="labeled"
             app:menu="@menu/bottom_nav_menu" />
 

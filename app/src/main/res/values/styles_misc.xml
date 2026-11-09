@@ -107,4 +107,15 @@
         <item name="cornerSize">50%</item>
     </style>
 
+
+    <!-- EggPlay: YouTube-style main tab labels -->
+    <style name="EggPlayTabText" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="textAllCaps">false</item>
+    </style>
+    <style name="EggPlayNavLabel" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
 </resources>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  eggplay: bottom navigation menu (YouTube-style), wired in MainActivity.
+  EggPlay: bottom navigation menu (YouTube-style), wired in MainActivity.
   SPDX-License-Identifier: GPL-3.0-or-later
   -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
@@ -9,15 +9,15 @@
         android:icon="@drawable/ic_home"
         android:title="@string/bottom_nav_home" />
     <item
-        android:id="@+id/bottom_nav_feed"
-        android:icon="@drawable/ic_subscriptions"
-        android:title="@string/bottom_nav_feed" />
+        android:id="@+id/bottom_nav_live"
+        android:icon="@drawable/ic_live_tv"
+        android:title="@string/bottom_nav_live" />
     <item
-        android:id="@+id/bottom_nav_subscriptions"
-        android:icon="@drawable/ic_tv"
-        android:title="@string/tab_subscriptions" />
+        android:id="@+id/bottom_nav_create"
+        android:icon="@drawable/ic_add_circle_outline"
+        android:title="@string/bottom_nav_create" />
     <item
-        android:id="@+id/bottom_nav_bookmarks"
-        android:icon="@drawable/ic_bookmark"
-        android:title="@string/tab_bookmarks_short" />
+        android:id="@+id/bottom_nav_you"
+        android:icon="@drawable/ic_person"
+        android:title="@string/bottom_nav_you" />
 </menu>

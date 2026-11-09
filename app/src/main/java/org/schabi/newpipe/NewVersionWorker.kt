@@ -161,6 +161,7 @@ class NewVersionWorker(
         private val TAG = NewVersionWorker::class.java.simpleName
         private const val NEWPIPE_API_URL = "https://newpipe.net/api/data.json"
         private const val IS_MANUAL = "isManual"
+        private const val ENABLE_UPDATE_CHECK = false
 
         /**
          * Start a new worker which checks if all conditions for performing a version check are met,
@@ -177,6 +178,9 @@ class NewVersionWorker(
          */
         @JvmStatic
         fun enqueueNewVersionCheckingWork(context: Context, isManual: Boolean) {
+            // EggPlay: update checks against upstream servers are disabled
+            // so the app never offers another app's APK.
+            if (!ENABLE_UPDATE_CHECK) return
             val workRequest = OneTimeWorkRequestBuilder<NewVersionWorker>()
                 .setInputData(workDataOf(IS_MANUAL to isManual))
                 .build()
