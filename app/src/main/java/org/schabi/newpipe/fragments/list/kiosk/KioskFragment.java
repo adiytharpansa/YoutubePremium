@@ -28,11 +28,14 @@ import org.schabi.newpipe.extractor.Page;
 import org.schabi.newpipe.extractor.ServiceList;
 import org.schabi.newpipe.extractor.StreamingService;
 import org.schabi.newpipe.extractor.exceptions.ExtractionException;
+import org.schabi.newpipe.extractor.exceptions.ParsingException;
 import org.schabi.newpipe.extractor.kiosk.KioskInfo;
 import org.schabi.newpipe.extractor.kiosk.KioskList;
+import org.schabi.newpipe.extractor.linkhandler.ListLinkHandler;
 import org.schabi.newpipe.extractor.linkhandler.ListLinkHandlerFactory;
 import org.schabi.newpipe.extractor.localization.ContentCountry;
 import org.schabi.newpipe.extractor.services.media_ccc.extractors.MediaCCCLiveStreamKiosk;
+import org.schabi.newpipe.extractor.services.youtube.extractors.kiosk.YoutubeTrendingExtractor;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
 import org.schabi.newpipe.fragments.list.BaseListInfoFragment;
 import org.schabi.newpipe.util.ExtractorHelper;
@@ -68,6 +71,10 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
     /** EggPlay: infos already filtered / ranked (they can be served again from the cache). */
     private static final Map<KioskInfo, Boolean> PROCESSED_INFOS =
             new WeakHashMap<>();
+
+    /** EggPlay: foreign kiosk info borrowed as the Home shell, and its original items. */
+    private KioskInfo borrowedShell;
+    private List<StreamInfoItem> borrowedShellItems;
 
     /** EggPlay: topical trending kiosks mixed into the YouTube Home feed. */
     private static final String[] HOME_MIX_KIOSK_IDS = {
@@ -205,18 +212,28 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
     /**
      * EggPlay: builds the Home feed from the Trending kiosk plus the topical trending
      * kiosks (music, gaming, movies &amp; shows, podcasts), interleaved and ranked
-     * locally by {@link HomeRecommender}. A topical kiosk that fails to load, or is
-     * unavailable, is simply left out; the main kiosk behaves as before.
+     * locally by {@link HomeRecommender}. Every source is optional: a kiosk that
+     * fails to load, or is unavailable, is simply left out, and a failed main kiosk
+     * is retried through {@link #loadHomeInfoRescue} before a topical kiosk info is
+     * borrowed as the shell (see {@link #finishHomeMix}).
      *
      * @param main the Single loading the main (Trending) kiosk info
      * @param appContext application context used for ranking
      * @param forceReload whether the topical kiosks may come from the cache
-     * @return a Single emitting the main info with the mixed item list set on it
+     * @return a Single emitting the shell info with the mixed item list set on it
      */
     private Single<KioskInfo> loadHomeMix(final Single<KioskInfo> main,
                                           final Context appContext,
                                           final boolean forceReload) {
-        final List<Single<List<StreamInfoItem>>> extras = new ArrayList<>();
+        final List<Single<List<KioskInfo>>> sources = new ArrayList<>();
+        final Throwable[] mainError = new Throwable[1];
+        sources.add(main.map(Collections::singletonList)
+                .doOnError(error -> mainError[0] = error)
+                .onErrorResumeNext(error -> loadHomeInfoRescue()
+                        .map(Collections::singletonList)
+                        .doOnError(rescueError -> mainError[0] = rescueError)
+                        .onErrorReturnItem(Collections.emptyList()))
+                .subscribeOn(Schedulers.io()));
         try {
             final KioskList kioskList = NewPipe.getService(serviceId).getKioskList();
             for (final String mixId : HOME_MIX_KIOSK_IDS) {
@@ -225,31 +242,95 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
                 }
                 final String mixUrl = kioskList.getListLinkHandlerFactoryByType(mixId)
                         .fromId(mixId).getUrl();
-                extras.add(ExtractorHelper.getKioskInfo(serviceId, mixUrl, forceReload)
-                        .map(KioskInfo::getRelatedItems)
+                sources.add(ExtractorHelper.getKioskInfo(serviceId, mixUrl, forceReload)
+                        .map(Collections::singletonList)
                         .onErrorReturnItem(Collections.emptyList())
                         .subscribeOn(Schedulers.io()));
             }
         } catch (final ExtractionException e) {
-            extras.clear();
+            // some topical kiosk is unavailable: keep the sources collected so far
         }
-        if (extras.isEmpty()) {
-            return main.map(info -> {
-                setHomeItems(info, appContext,
-                        Collections.singletonList(info.getRelatedItems()));
-                return info;
-            });
-        }
-        return main.flatMap(info -> Single.zip(extras, lists -> {
-            final List<List<StreamInfoItem>> buckets = new ArrayList<>();
-            buckets.add(info.getRelatedItems());
+        return Single.zip(sources, lists -> {
+            final List<List<KioskInfo>> slots = new ArrayList<>();
             for (final Object list : lists) {
                 //noinspection unchecked
-                buckets.add((List<StreamInfoItem>) list);
+                slots.add((List<KioskInfo>) list);
             }
-            setHomeItems(info, appContext, buckets);
-            return info;
-        }));
+            return slots;
+        }).flatMap(slots -> finishHomeMix(slots, appContext, mainError[0]));
+    }
+
+    /**
+     * EggPlay: second attempt at loading the Home kiosk info after the regular load
+     * failed. The YouTube Trending extractor derives the kiosk name from the page
+     * header and throws a ParsingException ("Could not get Trending name") when the
+     * header has an unexpected shape, which happens in some locales even though the
+     * items themselves parse fine. The fragment never displays that name (it uses
+     * the translated kiosk name), so reload through a name-tolerant extractor: a
+     * cosmetic name failure must not take the whole Home tab down.
+     *
+     * @return a Single emitting a fresh (uncached) info for this fragment's kiosk
+     */
+    private Single<KioskInfo> loadHomeInfoRescue() {
+        return Single.fromCallable(() -> {
+            final StreamingService service = NewPipe.getService(serviceId);
+            final ListLinkHandler linkHandler = service.getKioskList()
+                    .getListLinkHandlerFactoryByType(kioskId).fromId(kioskId);
+            final YoutubeTrendingExtractor extractor =
+                    new YoutubeTrendingExtractor(service, linkHandler, kioskId) {
+                        @Override
+                        public String getName() {
+                            try {
+                                return super.getName();
+                            } catch (final ParsingException e) {
+                                return kioskId;
+                            }
+                        }
+                    };
+            extractor.fetchPage();
+            return KioskInfo.getInfo(extractor);
+        }).subscribeOn(Schedulers.io());
+    }
+
+    /**
+     * EggPlay: picks the info that carries the mixed Home feed and fills it with the
+     * merged items. The first source that loaded wins: normally the Home kiosk
+     * itself (or its rescue info); otherwise a topical kiosk info is borrowed as
+     * the shell and given its own items back in {@link #handleResult}. Only when
+     * no source loaded at all is the main load error re-emitted, so a real failure
+     * (e.g. no network) still shows the error screen instead of an empty feed.
+     *
+     * @param slots one slot per source, holding its info or empty if it failed
+     * @param appContext application context used for ranking
+     * @param mainError the failure of the main source (and of its rescue), if any
+     * @return a Single emitting the shell info filled with the mixed items
+     */
+    private Single<KioskInfo> finishHomeMix(final List<List<KioskInfo>> slots,
+                                            final Context appContext,
+                                            final Throwable mainError) {
+        final List<List<StreamInfoItem>> buckets = new ArrayList<>();
+        KioskInfo shell = null;
+        boolean borrowed = false;
+        for (int i = 0; i < slots.size(); i++) {
+            final KioskInfo info = slots.get(i).isEmpty() ? null : slots.get(i).get(0);
+            buckets.add(info == null ? Collections.emptyList() : info.getRelatedItems());
+            if (shell == null && info != null) {
+                shell = info;
+                borrowed = i > 0;
+            }
+        }
+        if (shell == null) {
+            if (mainError != null) {
+                return Single.error(mainError);
+            }
+            return Single.error(new ExtractionException("Could not load the home feed"));
+        }
+        if (borrowed) {
+            borrowedShell = shell;
+            borrowedShellItems = shell.getRelatedItems();
+        }
+        setHomeItems(shell, appContext, buckets);
+        return Single.just(shell);
     }
 
     /**
@@ -345,6 +426,27 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
         name = kioskTranslatedName;
         setTitle(kioskTranslatedName);
         purgeLiveItems();
+        restoreBorrowedShell(result);
+    }
+
+    /**
+     * EggPlay: when the Home feed borrowed another kiosk's info as its shell (see
+     * {@link #finishHomeMix}), the merged items have been copied into the list
+     * adapter by now, so give the borrowed info its own items back. Otherwise the
+     * shared info cache would serve the Home mix on that kiosk's own tab as well.
+     *
+     * @param result the info that was just handled
+     */
+    private void restoreBorrowedShell(@NonNull final KioskInfo result) {
+        if (borrowedShell != result) {
+            return;
+        }
+        result.setRelatedItems(borrowedShellItems);
+        synchronized (PROCESSED_INFOS) {
+            PROCESSED_INFOS.remove(result);
+        }
+        borrowedShell = null;
+        borrowedShellItems = null;
     }
 
     @Override
