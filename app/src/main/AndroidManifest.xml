@@ -15,6 +15,10 @@
 
     <!-- We need to be able to open links in the browser on API 30+ -->
     <queries>
+        <!-- check whether the device has a system folder picker (SAF) -->
+        <intent>
+            <action android:name="android.intent.action.OPEN_DOCUMENT_TREE" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="http" />

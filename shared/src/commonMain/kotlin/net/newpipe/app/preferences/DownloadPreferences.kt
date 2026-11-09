@@ -24,7 +24,7 @@ object DownloadPreferences {
     const val CHARSET_MOST_SPECIAL = "CHARSET_MOST_SPECIAL"
 
     const val DEFAULT_STORAGE_ASK = false
-    const val DEFAULT_STORAGE_USE_SAF = true
+    const val DEFAULT_STORAGE_USE_SAF = false
 
     const val DEFAULT_DOWNLOAD_FOLDER = ""
     const val DEFAULT_FILE_CHARSET = CHARSET_MOST_SPECIAL
