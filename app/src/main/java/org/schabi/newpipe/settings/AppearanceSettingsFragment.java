@@ -2,6 +2,7 @@ package org.schabi.newpipe.settings;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Toast;
@@ -33,6 +34,12 @@ public class AppearanceSettingsFragment extends BasePreferenceFragment {
             applyThemeChange(startThemeKey, themeKey, newValue);
             return false;
         });
+
+        final Preference dynamicColorsPref = findPreference(getString(R.string.dynamic_colors_key));
+        if (dynamicColorsPref != null) {
+            // dynamic colors exist only on Android 12+
+            dynamicColorsPref.setVisible(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S);
+        }
 
         final String nightThemeKey = getString(R.string.night_theme_key);
         if (startThemeKey.equals(autoDeviceThemeKey)) {

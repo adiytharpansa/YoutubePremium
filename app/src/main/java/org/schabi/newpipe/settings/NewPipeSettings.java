@@ -53,6 +53,21 @@ public final class NewPipeSettings {
         // first run migrations, then setDefaultValues, since the latter requires the correct types
         MigrationManager.runMigrationsIfNeeded(context);
 
+        // EggPlay: Indonesian content (language and country) by default on first run
+        final SharedPreferences langPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final String contentLangKey = context.getString(R.string.content_language_key);
+        final String contentCountryKey = context.getString(R.string.content_country_key);
+        if (!langPrefs.contains(contentLangKey) || !langPrefs.contains(contentCountryKey)) {
+            final SharedPreferences.Editor langEditor = langPrefs.edit();
+            if (!langPrefs.contains(contentLangKey)) {
+                langEditor.putString(contentLangKey, "id");
+            }
+            if (!langPrefs.contains(contentCountryKey)) {
+                langEditor.putString(contentCountryKey, "ID");
+            }
+            langEditor.apply();
+        }
+
         // readAgain is true so that if new settings are added their default value is set
         PreferenceManager.setDefaultValues(context, R.xml.main_settings, true);
         PreferenceManager.setDefaultValues(context, R.xml.video_audio_settings, true);
@@ -84,6 +99,8 @@ public final class NewPipeSettings {
     /**
      * Makes sure a usable download folder is saved, so the user is never forced to pick one
      * with a system file manager (which some devices don't have at all).
+     *
+     * @param context the context
      */
     public static void ensureDownloadDirectories(final Context context) {
         saveDefaultVideoDownloadDirectory(context);
@@ -120,6 +137,7 @@ public final class NewPipeSettings {
     }
 
     /**
+     * @param context the context
      * @return {@code true} if files can be written directly to the public storage of the device
      */
     public static boolean canUseSharedStorage(final Context context) {
@@ -134,6 +152,8 @@ public final class NewPipeSettings {
      * {@code Download/EggPlay} on Android 10+, {@code Movies|Music/EggPlay} before that.
      * If the public folder can't be written, the app's own folder on the device storage is used.
      *
+     * @param context the context
+     * @param defaultDirectoryName the name of the default directory (e.g. Movies or Music)
      * @return the default download folder
      */
     @NonNull
@@ -169,6 +189,7 @@ public final class NewPipeSettings {
     }
 
     /**
+     * @param context the context
      * @return {@code true} if a system folder picker (Storage Access Framework) is available
      */
     public static boolean isSafPickerAvailable(final Context context) {
@@ -183,6 +204,9 @@ public final class NewPipeSettings {
     /**
      * SAF is only used if the user turned it on <b>and</b> the device actually has a folder picker.
      * Otherwise downloads go straight to the device storage.
+     *
+     * @param context the context
+     * @return {@code true} if the Storage Access Framework should be used
      */
     public static boolean useStorageAccessFramework(final Context context) {
         if (!isSafPickerAvailable(context)) {
